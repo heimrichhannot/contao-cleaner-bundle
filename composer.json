@@ -11,7 +11,7 @@
   ],
   "type": "contao-module",
   "homepage": "https://github.com/heimrichhannot/contao-cleaner",
-  "license": "LGPL-3.0+",
+  "license": "LGPL-3.0-or-later",
   "authors": [
     {
       "name": "Heimrich & Hannot",
@@ -23,7 +23,8 @@
   "require": {
     "php": "^7.1",
     "contao/core-bundle": "^4.4",
-    "heimrichhannot/contao-haste_plus": ">=1.4.0"
+    "symfony/framework-bundle": "^3.4",
+    "heimrichhannot/contao-utils-bundle": "^1.0"
   },
   "require-dev": {
     "contao/test-case": "^1.1",

@@ -1,6 +1,36 @@
+parameters:
+  huh.command.minutely: minutly
+  huh.command.hourly: hourly
+  huh.command.daily: daily
+  huh.command.weekly: weekly
+
 services:
   huh.cleaner.registry.cleaner:
     public: true
     class: HeimrichHannot\CleanerBundle\Registry\CleanerRegistry
     arguments:
       - "@contao.framework"
+  huh.cleaner.cron.command.minutely:
+    public: true
+    class: HeimrichHannot\CleanerBundle\Cron\CommandCleaner
+    arguments:
+      - "@contao.framework"
+      - $interval: '%huh.command.minutely%'
+  huh.cleaner.cron.command.hourly:
+    public: true
+    class: HeimrichHannot\CleanerBundle\Cron\CommandCleaner
+    arguments:
+      - "@contao.framework"
+      - $interval: '%huh.command.hourly%'
+  huh.cleaner.cron.command.daily:
+    public: true
+    class: HeimrichHannot\CleanerBundle\Cron\CommandCleaner
+    arguments:
+      - "@contao.framework"
+      - $interval: '%huh.command.daily%'
+  huh.cleaner.cron.command.weekly:
+    public: true
+    class: HeimrichHannot\CleanerBundle\Cron\CommandCleaner
+    arguments:
+      - "@contao.framework"
+      - $interval: '%huh.command.weekly%'

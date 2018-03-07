@@ -8,12 +8,14 @@
 
 namespace HeimrichHannot\CleanerBundle\Cron;
 
+use Contao\Config;
 use Contao\Controller;
+use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
 use Contao\Folder;
+use Contao\StringUtil;
 use Contao\System;
-use HeimrichHannot\Haste\Util\Files;
 
-class Cleaner extends Controller
+class CommandCleaner extends Controller
 {
     const TYPE_ENTITY = 'entity';
     const TYPE_FILE = 'file';
@@ -31,29 +33,27 @@ class Cleaner extends Controller
         self::FILEDIR_RETRIEVAL_MODE_DIRECTORY,
     ];
 
-    public static function runMinutely()
+    /**
+     * @var ContaoFrameworkInterface
+     */
+    private $framework;
+
+    /**
+     * @var string
+     */
+    private $interval;
+
+    public function __construct(ContaoFrameworkInterface $framework, string $interval)
     {
-        static::run('minutely');
+        parent::__construct();
+
+        $this->framework = $framework;
+        $this->interval = $interval;
     }
 
-    public static function runHourly()
+    public function run()
     {
-        static::run('hourly');
-    }
-
-    public static function runWeekly()
-    {
-        static::run('weekly');
-    }
-
-    public static function runDaily()
-    {
-        static::run('daily');
-    }
-
-    public static function run($strPeriod)
-    {
-        $arrOrder = deserialize(\Config::get('cleanerOrder'), true);
+        $arrOrder = StringUtil::deserialize(Config::get('cleanerOrder'), true);
         $arrOptions = [];
 
         if (count($arrOrder) > 0) {
@@ -62,7 +62,7 @@ class Cleaner extends Controller
             ];
         }
 
-        if (null !== ($objCleaners = System::getContainer()->get('huh.cleaner.registry.cleaner')->findBy(['published=?', 'period=?'], [true, $strPeriod], $arrOptions))) {
+        if (null !== ($objCleaners = System::getContainer()->get('huh.cleaner.registry.cleaner')->findBy(['published=?', 'period=?'], [true, $this->interval], $arrOptions))) {
             while ($objCleaners->next()) {
                 switch ($objCleaners->type) {
                     case static::TYPE_ENTITY:
@@ -73,7 +73,7 @@ class Cleaner extends Controller
                         $strQuery = "DELETE FROM $objCleaners->dataContainer WHERE ($objCleaners->whereCondition)";
 
                         if ($objCleaners->addMaxAge) {
-                            $strQuery .= static::getMaxAgeCondition($objCleaners);
+                            $strQuery .= $this->getMaxAgeCondition($objCleaners);
                         }
 
                         \Database::getInstance()->execute(html_entity_decode($strQuery));
@@ -82,7 +82,7 @@ class Cleaner extends Controller
                     case static::TYPE_FILE:
                         switch ($objCleaners->fileDirRetrievalMode) {
                             case static::FILEDIR_RETRIEVAL_MODE_DIRECTORY:
-                                $strPath = System::getContainer()->get('contao.framework')->getAdapter(Files::class)->getPathFromUuid($objCleaners->directory);
+                                $strPath = System::getContainer()->get('huh.utils.file')->getPathFromUuid($objCleaners->directory);
 
                                 $objFolder = new Folder($strPath);
 
@@ -98,7 +98,7 @@ class Cleaner extends Controller
                                     continue 2;
                                 }
 
-                                $arrFields = deserialize($objCleaners->entityFields, true);
+                                $arrFields = StringUtil::deserialize($objCleaners->entityFields, true);
 
                                 if (empty($arrFields)) {
                                     continue 2;
@@ -107,7 +107,7 @@ class Cleaner extends Controller
                                 $strQuery = "SELECT * FROM $objCleaners->dataContainer WHERE ($objCleaners->whereCondition)";
 
                                 if ($objCleaners->addMaxAge) {
-                                    $strQuery .= static::getMaxAgeCondition($objCleaners);
+                                    $strQuery .= $this->getMaxAgeCondition($objCleaners);
                                 }
 
                                 $objInstances = \Database::getInstance()->execute(html_entity_decode($strQuery));
@@ -120,14 +120,14 @@ class Cleaner extends Controller
                                             }
 
                                             // deserialize if necessary
-                                            $varValue = deserialize($objInstances->{$strField});
+                                            $varValue = StringUtil::deserialize($objInstances->{$strField});
 
                                             if (!is_array($varValue)) {
                                                 $varValue = [$varValue];
                                             }
 
                                             foreach ($varValue as $strFile) {
-                                                if (null === ($objFile = System::getContainer()->get('contao.framework')->getAdapter(Files::class)->getFileFromUuid($strFile, true))) {
+                                                if (null === ($objFile = System::getContainer()->get('huh.utils.file')->getFileFromUuid($strFile, true))) {
                                                     continue;
                                                 }
 
@@ -145,9 +145,9 @@ class Cleaner extends Controller
         }
     }
 
-    public static function getMaxAgeCondition($objCleaner)
+    public function getMaxAgeCondition($objCleaner)
     {
-        $arrMaxAge = deserialize($objCleaner->maxAge, true);
+        $arrMaxAge = StringUtil::deserialize($objCleaner->maxAge, true);
 
         $intFactor = 1;
         switch ($arrMaxAge['unit']) {
