@@ -1,0 +1,6 @@
+services:
+  huh.cleaner.registry.cleaner:
+    public: true
+    class: HeimrichHannot\CleanerBundle\Registry\CleanerRegistry
+    arguments:
+      - "@contao.framework"

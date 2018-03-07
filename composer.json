@@ -1,0 +1,69 @@
+{
+  "name": "heimrichhannot/contao-cleaner-bundle",
+  "description": "This bundle adds cleaner functionality for periodically removing arbitrary entities and/or files fulfilling a certain condition in Contao (using TL_CRON or your server's cron).",
+  "keywords": [
+    "contao",
+    "cleaner",
+    "entity",
+    "file",
+    "module",
+    "developer"
+  ],
+  "type": "contao-module",
+  "homepage": "https://github.com/heimrichhannot/contao-cleaner",
+  "license": "LGPL-3.0+",
+  "authors": [
+    {
+      "name": "Heimrich & Hannot",
+      "email": "digitales@heimrich-hannot.de",
+      "homepage": "http://www.heimrich-hannot.de",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "^7.1",
+    "contao/core-bundle": "^4.4",
+    "heimrichhannot/contao-haste_plus": ">=1.4.0"
+  },
+  "require-dev": {
+    "contao/test-case": "^1.1",
+    "contao/manager-plugin": "^2.0",
+    "friendsofphp/php-cs-fixer": "^2.2",
+    "phpunit/phpunit": "^6.5",
+    "phpunit/phpunit-mock-objects": "^4.0|^5.0",
+    "phpunit/php-token-stream": "^1.4|^2.0|^3.0",
+    "php-http/guzzle6-adapter": "^1.1",
+    "php-http/message-factory": "^1.0.2",
+    "satooshi/php-coveralls": "^2.0",
+    "symfony/phpunit-bridge": "^3.2"
+  },
+  "conflict": {
+    "contao/core": "*",
+    "contao/manager-plugin": "<2.0 || >=3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "HeimrichHannot\\CleanerBundle\\": "src/"
+    },
+    "classmap": [
+      "src/"
+    ],
+    "exclude-from-classmap": [
+      "src/Resources/contao/config/",
+      "src/Resources/contao/dca/",
+      "src/Resources/contao/languages/",
+      "src/Resources/contao/templates/"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "HeimrichHannot\\CleanerBundle\\Test\\": "tests/"
+    }
+  },
+  "config": {
+    "preferred-install": "dist"
+  },
+  "extra": {
+    "contao-manager-plugin": "HeimrichHannot\\CleanerBundle\\ContaoManager\\Plugin"
+  }
+}
