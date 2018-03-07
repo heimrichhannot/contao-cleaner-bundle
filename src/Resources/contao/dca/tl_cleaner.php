@@ -5,7 +5,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dataContainer'     => 'Table',
         'enableVersioning'  => true,
         'onsubmit_callback' => [
-            ['HeimrichHannot\Haste\Dca\General', 'setDateAdded'],
+            ['HeimrichHannot\UtilsBundle\Dca\DcaUtil', 'setDateAdded'],
         ],
         'sql'               => [
             'keys' => [
@@ -63,13 +63,13 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         ],
     ],
     'palettes'    => [
-        '__selector__'                                                    => ['type', 'fileDirRetrievalMode', 'addMaxAge'],
-        'default'                                                         => '{general_legend},type;',
+        '__selector__'                                                 => ['type', 'fileDirRetrievalMode', 'addMaxAge'],
+        'default'                                                      => '{general_legend},type;',
         \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::TYPE_ENTITY => '{general_legend},type,title;{config_legend},dataContainer,period,whereCondition,addMaxAge;{publish_legend},published;',
         \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::TYPE_FILE   => '{general_legend},type,title;{config_legend},period,fileDirRetrievalMode;{publish_legend},published;',
     ],
     'subpalettes' => [
-        'addMaxAge'                                                                                                          => 'maxAge,maxAgeField',
+        'addMaxAge'                                                                                                       => 'maxAge,maxAgeField',
         'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS => 'dataContainer,entityFields,whereCondition,addMaxAge',
         'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::FILEDIR_RETRIEVAL_MODE_DIRECTORY     => 'directory,addGitKeepAfterClean',
     ],
@@ -119,7 +119,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dataContainer'        => [
             'inputType'        => 'select',
             'label'            => &$GLOBALS['TL_LANG']['tl_cleaner']['dataContainer'],
-            'options_callback' => ['HeimrichHannot\Haste\Dca\General', 'getDataContainers'],
+            'options_callback' => ['HeimrichHannot\UtilsBundle\Dca\DcaUtil', 'getDataContainers'],
             'eval'             => [
                 'chosen'             => true,
                 'includeBlankOption' => true,

@@ -9,7 +9,7 @@
 namespace HeimrichHannot\CleanerBundle\Backend;
 
 use Contao\Controller;
-use HeimrichHannot\Haste\Dca\General;
+use Contao\System;
 
 class Cleaner extends Controller
 {
@@ -19,6 +19,6 @@ class Cleaner extends Controller
             return [];
         }
 
-        return General::getFields($objDc->activeRecord->dataContainer, false);
+        return System::getContainer()->get('huh.utils.dca')->getFields($objDc->activeRecord->dataContainer);
     }
 }
