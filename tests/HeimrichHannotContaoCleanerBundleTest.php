@@ -8,18 +8,16 @@
 
 namespace HeimrichHannot\BeExplanationBundle\Tests;
 
+use HeimrichHannot\BeExplanationBundle\DependencyInjection\ContaoCleanerExtension;
 use HeimrichHannot\CleanerBundle\HeimrichHannotContaoCleanerBundle;
 use PHPUnit\Framework\TestCase;
 
 class HeimrichHannotContaoCleanerBundleTest extends TestCase
 {
-    /**
-     * Tests the object instantiation.
-     */
-    public function testCanBeInstantiated()
+    public function testGetContainerExtension()
     {
         $bundle = new HeimrichHannotContaoCleanerBundle();
 
-        $this->assertInstanceOf(HeimrichHannotContaoCleanerBundle::class, $bundle);
+        $this->assertInstanceOf(ContaoCleanerExtension::class, $bundle->getContainerExtension());
     }
 }
