@@ -10,8 +10,8 @@ namespace HeimrichHannot\CleanerBundle\Tests\Cron;
 
 use Contao\System;
 use Contao\TestCase\ContaoTestCase;
-use HeimrichHannot\CleanerBundle\CleanerModel;
-use HeimrichHannot\CleanerBundle\Cron\CommandCleaner;
+use HeimrichHannot\CleanerBundle\Command\CommandCleaner;
+use HeimrichHannot\CleanerBundle\Model\CleanerModel;
 
 class CommandCleanerTest extends ContaoTestCase
 {

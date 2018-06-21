@@ -9,7 +9,7 @@
 namespace HeimrichHannot\CleanerBundle\Registry;
 
 use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
-use HeimrichHannot\CleanerBundle\CleanerModel;
+use HeimrichHannot\CleanerBundle\Model\CleanerModel;
 
 class CleanerRegistry
 {

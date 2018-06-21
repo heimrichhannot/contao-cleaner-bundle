@@ -39,10 +39,10 @@ $arrLang['publish_legend'] = 'Aktivierung';
  * Reference
  */
 $arrLang['reference'] = [
-    \HeimrichHannot\CleanerBundle\Cron\Cleaner::TYPE_ENTITY                          => 'Entität',
-    \HeimrichHannot\CleanerBundle\Cron\Cleaner::TYPE_FILE                            => 'Datei',
-    \HeimrichHannot\CleanerBundle\Cron\Cleaner::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS => 'Felder von Entitäten',
-    \HeimrichHannot\CleanerBundle\Cron\Cleaner::FILEDIR_RETRIEVAL_MODE_DIRECTORY     => 'Verzeichnis',
+    \HeimrichHannot\CleanerBundle\Command\CommandCleaner::TYPE_ENTITY                          => 'Entität',
+    \HeimrichHannot\CleanerBundle\Command\CommandCleaner::TYPE_FILE                            => 'Datei',
+    \HeimrichHannot\CleanerBundle\Command\CommandCleaner::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS => 'Felder von Entitäten',
+    \HeimrichHannot\CleanerBundle\Command\CommandCleaner::FILEDIR_RETRIEVAL_MODE_DIRECTORY     => 'Verzeichnis',
 ];
 
 /**

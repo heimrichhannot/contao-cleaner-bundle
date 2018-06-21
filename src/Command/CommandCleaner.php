@@ -6,17 +6,24 @@
  * @license LGPL-3.0-or-later
  */
 
-namespace HeimrichHannot\CleanerBundle\Cron;
+namespace HeimrichHannot\CleanerBundle\Command;
 
 use Contao\Config;
-use Contao\Controller;
+use Contao\CoreBundle\Command\AbstractLockedCommand;
 use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
+use Contao\CoreBundle\Framework\FrameworkAwareTrait;
 use Contao\Folder;
 use Contao\StringUtil;
 use Contao\System;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
-class CommandCleaner extends Controller
+class CommandCleaner extends AbstractLockedCommand
 {
+    use FrameworkAwareTrait;
+
     const TYPE_ENTITY = 'entity';
     const TYPE_FILE = 'file';
 
@@ -34,6 +41,20 @@ class CommandCleaner extends Controller
     ];
 
     /**
+     * @var SymfonyStyle
+     */
+    protected $io;
+
+    /**
+     * @var InputInterface
+     */
+    protected $input;
+    /**
+     * @var OutputInterface
+     */
+    protected $output;
+
+    /**
      * @var ContaoFrameworkInterface
      */
     private $framework;
@@ -43,15 +64,34 @@ class CommandCleaner extends Controller
      */
     private $interval;
 
-    public function __construct(ContaoFrameworkInterface $framework, string $interval)
+    public function __construct(ContaoFrameworkInterface $framework)
     {
-        parent::__construct();
-
         $this->framework = $framework;
+        parent::__construct();
+    }
+
+    /**
+     * @return string
+     */
+    public function getInterval(): string
+    {
+        return $this->interval;
+    }
+
+    /**
+     * @param string $interval
+     */
+    public function setInterval(string $interval): void
+    {
         $this->interval = $interval;
     }
 
-    public function run()
+    /**
+     * @throws \Exception
+     *
+     * @return int|void
+     */
+    public function executeCleaner()
     {
         $arrOrder = StringUtil::deserialize(Config::get('cleanerOrder'), true);
         $arrOptions = [];
@@ -76,7 +116,9 @@ class CommandCleaner extends Controller
                             $strQuery .= $this->getMaxAgeCondition($objCleaners);
                         }
 
-                        \Database::getInstance()->execute(html_entity_decode($strQuery));
+                        $result = \Database::getInstance()->execute(html_entity_decode($strQuery));
+
+                        $this->output->writeln("<fg=green>Cleanup table '".$objCleaners->dataContainer."', removed ".(int) $result->numRows.' entries ['.$objCleaners->title.'].</>');
 
                         break;
                     case static::TYPE_FILE:
@@ -91,6 +133,8 @@ class CommandCleaner extends Controller
                                 if ($objCleaners->addGitKeepAfterClean) {
                                     touch(TL_ROOT.'/'.$strPath.'/.gitkeep');
                                 }
+
+                                $this->output->writeln("<fg=green>Cleanup folder '".$strPath.' ['.$objCleaners->title.'].</>');
 
                                 break;
                             case static::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS:
@@ -131,7 +175,9 @@ class CommandCleaner extends Controller
                                                     continue;
                                                 }
 
-                                                $objFile->delete();
+                                                if (true === $objFile->delete()) {
+                                                    $this->output->writeln("<fg=green>Cleanup files, removed file '".$objFile->path.' ['.$objCleaners->title.'].</>');
+                                                }
                                             }
                                         }
                                     }
@@ -165,5 +211,41 @@ class CommandCleaner extends Controller
         $intMaxInterval = $arrMaxAge['value'] * $intFactor;
 
         return " AND (UNIX_TIMESTAMP() > $objCleaner->dataContainer.$objCleaner->maxAgeField + $intMaxInterval)";
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('interval', 'i', InputOption::VALUE_REQUIRED, 'Provide the interval.', 'daily');
+
+        $this->setName('cleaner:execute')->setDescription(
+            'Migration of tl_module type:newsreader modules to huhreader and creates reader configurations from old tl_module settings.'
+        );
+        parent::configure();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function executeLocked(InputInterface $input, OutputInterface $output)
+    {
+        $this->framework->initialize();
+        $this->io = new SymfonyStyle($input, $output);
+        $this->input = $input;
+        $this->output = $output;
+
+        $this->setInterval($input->getOption('interval'));
+
+        $this->rootDir = $this->getContainer()->getParameter('kernel.project_dir');
+
+        try {
+            $this->executeCleaner();
+        } catch (\Exception $e) {
+            $this->output->writeln('<fg=red>'.$e->getMessage().'</>');
+        }
+
+        return 0;
     }
 }

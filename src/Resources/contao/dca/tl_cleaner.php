@@ -5,7 +5,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dataContainer'     => 'Table',
         'enableVersioning'  => true,
         'onsubmit_callback' => [
-            ['HeimrichHannot\UtilsBundle\Dca\DcaUtil', 'setDateAdded'],
+            ['huh.utils.dca', 'setDateAdded'],
         ],
         'sql'               => [
             'keys' => [
@@ -63,15 +63,15 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         ],
     ],
     'palettes'    => [
-        '__selector__'                                                 => ['type', 'fileDirRetrievalMode', 'addMaxAge'],
-        'default'                                                      => '{general_legend},type;',
-        \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::TYPE_ENTITY => '{general_legend},type,title;{config_legend},dataContainer,period,whereCondition,addMaxAge;{publish_legend},published;',
-        \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::TYPE_FILE   => '{general_legend},type,title;{config_legend},period,fileDirRetrievalMode;{publish_legend},published;',
+        '__selector__'                                                    => ['type', 'fileDirRetrievalMode', 'addMaxAge'],
+        'default'                                                         => '{general_legend},type;',
+        \HeimrichHannot\CleanerBundle\Command\CommandCleaner::TYPE_ENTITY => '{general_legend},type,title;{config_legend},dataContainer,period,whereCondition,addMaxAge;{publish_legend},published;',
+        \HeimrichHannot\CleanerBundle\Command\CommandCleaner::TYPE_FILE   => '{general_legend},type,title;{config_legend},period,fileDirRetrievalMode;{publish_legend},published;',
     ],
     'subpalettes' => [
-        'addMaxAge'                                                                                                       => 'maxAge,maxAgeField',
-        'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS => 'dataContainer,entityFields,whereCondition,addMaxAge',
-        'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::FILEDIR_RETRIEVAL_MODE_DIRECTORY     => 'directory,addGitKeepAfterClean',
+        'addMaxAge'                                                                                                          => 'maxAge,maxAgeField',
+        'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Command\CommandCleaner::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS => 'dataContainer,entityFields,whereCondition,addMaxAge',
+        'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Command\CommandCleaner::FILEDIR_RETRIEVAL_MODE_DIRECTORY     => 'directory,addGitKeepAfterClean',
     ],
     'fields'      => [
         'id'                   => [
@@ -93,7 +93,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'exclude'   => true,
             'filter'    => true,
             'inputType' => 'select',
-            'options'   => \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::TYPES,
+            'options'   => \HeimrichHannot\CleanerBundle\Command\CommandCleaner::TYPES,
             'reference' => &$GLOBALS['TL_LANG']['tl_cleaner']['reference'],
             'eval'      => ['tl_class' => 'w50', 'mandatory' => true, 'submitOnChange' => true, 'includeBlankOption' => true],
             'sql'       => "varchar(64) NOT NULL default ''",
@@ -119,7 +119,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dataContainer'        => [
             'inputType'        => 'select',
             'label'            => &$GLOBALS['TL_LANG']['tl_cleaner']['dataContainer'],
-            'options_callback' => ['HeimrichHannot\UtilsBundle\Dca\DcaUtil', 'getDataContainers'],
+            'options_callback' => ['huh.utils.dca', 'getDataContainers'],
             'eval'             => [
                 'chosen'             => true,
                 'includeBlankOption' => true,
@@ -177,7 +177,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'exclude'   => true,
             'filter'    => true,
             'inputType' => 'select',
-            'options'   => \HeimrichHannot\CleanerBundle\Cron\CommandCleaner::FILEDIR_RETRIEVAL_MODES,
+            'options'   => \HeimrichHannot\CleanerBundle\Command\CommandCleaner::FILEDIR_RETRIEVAL_MODES,
             'reference' => &$GLOBALS['TL_LANG']['tl_cleaner']['reference'],
             'eval'      => ['tl_class' => 'w50', 'submitOnChange' => true, 'mandatory' => true, 'includeBlankOption' => true],
             'sql'       => "varchar(64) NOT NULL default ''",

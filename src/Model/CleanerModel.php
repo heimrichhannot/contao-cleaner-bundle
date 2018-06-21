@@ -6,7 +6,7 @@
  * @license LGPL-3.0-or-later
  */
 
-namespace HeimrichHannot\CleanerBundle;
+namespace HeimrichHannot\CleanerBundle\Model;
 
 use Contao\Model;
 

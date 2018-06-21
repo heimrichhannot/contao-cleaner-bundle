@@ -1,0 +1,45 @@
+services:
+    _defaults:
+        autoconfigure: true
+
+    _instanceof:
+        Contao\CoreBundle\Framework\FrameworkAwareInterface:
+            calls:
+                - ["setFramework", ["@contao.framework"]]
+
+    huh.cleaner.cron.command.minutely:
+      public: true
+      class: HeimrichHannot\CleanerBundle\Command\CommandCleaner
+      calls:
+        - method : setInterval
+          arguments:
+          - '%huh.command.minutely%'
+      arguments:
+        - "@contao.framework"
+    huh.cleaner.cron.command.hourly:
+      public: true
+      class: HeimrichHannot\CleanerBundle\Command\CommandCleaner
+      calls:
+          - method : setInterval
+            arguments:
+              - '%huh.command.hourly%'
+      arguments:
+        - "@contao.framework"
+    huh.cleaner.cron.command.daily:
+      public: true
+      class: HeimrichHannot\CleanerBundle\Command\CommandCleaner
+      calls:
+          - method : setInterval
+            arguments:
+              - '%huh.command.daily%'
+      arguments:
+        - "@contao.framework"
+    huh.cleaner.cron.command.weekly:
+      public: true
+      class: HeimrichHannot\CleanerBundle\Command\CommandCleaner
+      calls:
+         - method : setInterval
+           arguments:
+           - '%huh.command.weekly%'
+      arguments:
+        - "@contao.framework"
