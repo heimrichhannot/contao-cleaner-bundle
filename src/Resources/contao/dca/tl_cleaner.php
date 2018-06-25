@@ -65,13 +65,13 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
     'palettes'    => [
         '__selector__'                                                    => ['type', 'fileDirRetrievalMode', 'addMaxAge'],
         'default'                                                         => '{general_legend},type;',
-        \HeimrichHannot\CleanerBundle\Command\CommandCleaner::TYPE_ENTITY => '{general_legend},type,title;{config_legend},dataContainer,period,whereCondition,addMaxAge;{publish_legend},published;',
-        \HeimrichHannot\CleanerBundle\Command\CommandCleaner::TYPE_FILE   => '{general_legend},type,title;{config_legend},period,fileDirRetrievalMode;{publish_legend},published;',
+        \HeimrichHannot\CleanerBundle\Command\Cleaner::TYPE_ENTITY => '{general_legend},type,title;{config_legend},dataContainer,period,whereCondition,addMaxAge;{publish_legend},published;',
+        \HeimrichHannot\CleanerBundle\Command\Cleaner::TYPE_FILE   => '{general_legend},type,title;{config_legend},period,fileDirRetrievalMode;{publish_legend},published;',
     ],
     'subpalettes' => [
         'addMaxAge'                                                                                                          => 'maxAge,maxAgeField',
-        'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Command\CommandCleaner::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS => 'dataContainer,entityFields,whereCondition,addMaxAge',
-        'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Command\CommandCleaner::FILEDIR_RETRIEVAL_MODE_DIRECTORY     => 'directory,addGitKeepAfterClean',
+        'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Command\Cleaner::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS => 'dataContainer,entityFields,whereCondition,addMaxAge',
+        'fileDirRetrievalMode_' . \HeimrichHannot\CleanerBundle\Command\Cleaner::FILEDIR_RETRIEVAL_MODE_DIRECTORY     => 'directory,addGitKeepAfterClean',
     ],
     'fields'      => [
         'id'                   => [
@@ -93,7 +93,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'exclude'   => true,
             'filter'    => true,
             'inputType' => 'select',
-            'options'   => \HeimrichHannot\CleanerBundle\Command\CommandCleaner::TYPES,
+            'options'   => \HeimrichHannot\CleanerBundle\Command\Cleaner::TYPES,
             'reference' => &$GLOBALS['TL_LANG']['tl_cleaner']['reference'],
             'eval'      => ['tl_class' => 'w50', 'mandatory' => true, 'submitOnChange' => true, 'includeBlankOption' => true],
             'sql'       => "varchar(64) NOT NULL default ''",
@@ -177,7 +177,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'exclude'   => true,
             'filter'    => true,
             'inputType' => 'select',
-            'options'   => \HeimrichHannot\CleanerBundle\Command\CommandCleaner::FILEDIR_RETRIEVAL_MODES,
+            'options'   => \HeimrichHannot\CleanerBundle\Command\Cleaner::FILEDIR_RETRIEVAL_MODES,
             'reference' => &$GLOBALS['TL_LANG']['tl_cleaner']['reference'],
             'eval'      => ['tl_class' => 'w50', 'submitOnChange' => true, 'mandatory' => true, 'includeBlankOption' => true],
             'sql'       => "varchar(64) NOT NULL default ''",
@@ -206,6 +206,32 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         ],
     ],
 ];
+
+if (System::getContainer()->get('huh.utils.container')->isBundleActive('privacy')) {
+    $dca             = &$GLOBALS['TL_DCA']['tl_cleaner'];
+    $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
+
+    $fields = [
+        'addPrivacyProtocolEntry'         => $protocolManager->getSelectorFieldDca(),
+        'privacyProtocolEntryArchive'     => $protocolManager->getArchiveFieldDca(),
+        'privacyProtocolEntryType'        => $protocolManager->getTypeFieldDca(),
+        'privacyProtocolEntryDescription' => $protocolManager->getDescriptionFieldDca(),
+    ];
+
+    $dca['fields'] += $fields;
+
+    $dca['palettes']['__selector__'][]             = 'addPrivacyProtocolEntry';
+    $dca['subpalettes']['addPrivacyProtocolEntry'] = 'privacyProtocolEntryArchive,privacyProtocolEntryType,privacyProtocolEntryDescription';
+
+    // add to palettes
+    foreach ($dca['palettes'] as $palette => &$fields) {
+        if (in_array($palette, ['__selector__', 'default'])) {
+            continue;
+        }
+
+        $fields = str_replace(';{publish_legend', ',addPrivacyProtocolEntry;{publish_legend', $fields);
+    }
+}
 
 
 class tl_cleaner extends \Backend

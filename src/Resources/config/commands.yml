@@ -9,7 +9,7 @@ services:
 
     huh.cleaner.cron.command.minutely:
       public: true
-      class: HeimrichHannot\CleanerBundle\Command\CommandCleaner
+      class: HeimrichHannot\CleanerBundle\Command\Cleaner
       calls:
         - method : setInterval
           arguments:
@@ -18,7 +18,7 @@ services:
         - "@contao.framework"
     huh.cleaner.cron.command.hourly:
       public: true
-      class: HeimrichHannot\CleanerBundle\Command\CommandCleaner
+      class: HeimrichHannot\CleanerBundle\Command\Cleaner
       calls:
           - method : setInterval
             arguments:
@@ -27,7 +27,7 @@ services:
         - "@contao.framework"
     huh.cleaner.cron.command.daily:
       public: true
-      class: HeimrichHannot\CleanerBundle\Command\CommandCleaner
+      class: HeimrichHannot\CleanerBundle\Command\Cleaner
       calls:
           - method : setInterval
             arguments:
@@ -36,7 +36,7 @@ services:
         - "@contao.framework"
     huh.cleaner.cron.command.weekly:
       public: true
-      class: HeimrichHannot\CleanerBundle\Command\CommandCleaner
+      class: HeimrichHannot\CleanerBundle\Command\Cleaner
       calls:
          - method : setInterval
            arguments:

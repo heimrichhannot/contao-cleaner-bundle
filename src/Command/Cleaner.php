@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class CommandCleaner extends AbstractLockedCommand
+class Cleaner extends AbstractLockedCommand
 {
     use FrameworkAwareTrait;
 
@@ -110,15 +110,49 @@ class CommandCleaner extends AbstractLockedCommand
                             continue 2;
                         }
 
-                        $strQuery = "DELETE FROM $objCleaners->dataContainer WHERE ($objCleaners->whereCondition)";
+                        $strQuery = "SELECT id FROM $objCleaners->dataContainer WHERE ($objCleaners->whereCondition)";
 
                         if ($objCleaners->addMaxAge) {
                             $strQuery .= $this->getMaxAgeCondition($objCleaners);
                         }
 
                         $result = \Database::getInstance()->execute(html_entity_decode($strQuery));
+                        $removedCount = 0;
 
-                        $this->output->writeln("<fg=green>Cleanup table '".$objCleaners->dataContainer."', removed ".(int) $result->numRows.' entries ['.$objCleaners->title.'].</>');
+                        if ($result->numRows > 0) {
+                            $ids = $result->fetchEach('id');
+
+                            if (null !== ($models = System::getContainer()->get('huh.utils.model')->findModelInstancesBy($objCleaners->dataContainer, [
+                                    'column' => ["$objCleaners->dataContainer.id IN(".implode(',', array_map('intval', $ids)).')'],
+                                    'value' => null,
+                                    'return' => 'Collection',
+                                ], []))) {
+                                while ($models->next()) {
+                                    $data = $models->row();
+
+                                    $affectedRows = $models->delete();
+
+                                    if ($affectedRows > 0 && $objCleaners->addPrivacyProtocolEntry) {
+                                        ++$removedCount;
+
+                                        $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
+
+                                        if ($objCleaners->privacyProtocolEntryDescription) {
+                                            $data['description'] = $objCleaners->privacyProtocolEntryDescription;
+                                        }
+
+                                        $protocolManager->addEntry(
+                                            $objCleaners->privacyProtocolEntryType,
+                                            $objCleaners->privacyProtocolEntryArchive,
+                                            $data,
+                                            'heimrichhannot/contao-cleaner-bundle'
+                                        );
+                                    }
+                                }
+                            }
+                        }
+
+                        $this->output->writeln("<fg=green>Cleanup table '".$objCleaners->dataContainer."', removed ".$removedCount.' entries ['.$objCleaners->title.'].</>');
 
                         break;
                     case static::TYPE_FILE:
