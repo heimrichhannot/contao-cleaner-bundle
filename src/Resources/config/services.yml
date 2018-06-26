@@ -10,3 +10,8 @@ services:
     class: HeimrichHannot\CleanerBundle\Registry\CleanerRegistry
     arguments:
       - "@contao.framework"
+  huh.cleaner.controller.poormanscron:
+      public: true
+      class: HeimrichHannot\CleanerBundle\Controller\PoorManCronController
+      arguments:
+        - "@contao.framework"

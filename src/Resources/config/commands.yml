@@ -9,7 +9,7 @@ services:
 
     huh.cleaner.command.minutely:
       public: true
-      class: HeimrichHannot\CleanerBundle\Command\Cleaner
+      class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
       calls:
         - method : setInterval
           arguments:
@@ -18,7 +18,7 @@ services:
         - "@contao.framework"
     huh.cleaner.command.hourly:
       public: true
-      class: HeimrichHannot\CleanerBundle\Command\Cleaner
+      class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
       calls:
           - method : setInterval
             arguments:
@@ -27,7 +27,7 @@ services:
         - "@contao.framework"
     huh.cleaner.command.daily:
       public: true
-      class: HeimrichHannot\CleanerBundle\Command\Cleaner
+      class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
       calls:
           - method : setInterval
             arguments:
@@ -36,7 +36,7 @@ services:
         - "@contao.framework"
     huh.cleaner.command.weekly:
       public: true
-      class: HeimrichHannot\CleanerBundle\Command\Cleaner
+      class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
       calls:
          - method : setInterval
            arguments:

@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class Cleaner extends AbstractLockedCommand
+class CleanerCommand extends AbstractLockedCommand
 {
     use FrameworkAwareTrait;
 
@@ -205,7 +205,7 @@ class Cleaner extends AbstractLockedCommand
                                             }
 
                                             foreach ($varValue as $strFile) {
-                                                if (null === ($objFile = System::getContainer()->get('huh.utils.file')->getFileFromUuid($strFile, true))) {
+                                                if (null === ($objFile = System::getContainer()->get('huh.utils.file')->getFileFromUuid($strFile))) {
                                                     continue;
                                                 }
 
@@ -255,7 +255,7 @@ class Cleaner extends AbstractLockedCommand
         $this->addOption('interval', 'i', InputOption::VALUE_REQUIRED, 'Provide the interval.', 'daily');
 
         $this->setName('cleaner:execute')->setDescription(
-            'Migration of tl_module type:newsreader modules to huhreader and creates reader configurations from old tl_module settings.'
+            'Trigger the cleaner, and remove no longer required files and database entries.'
         );
         parent::configure();
     }

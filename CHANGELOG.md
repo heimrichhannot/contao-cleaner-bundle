@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.1.2] - 2018-06-26
+
+### Fixed
+- `PoorMansCron` implementation fixed
+
 ## [2.1.1] - 2018-06-25
 
 ### Fixed

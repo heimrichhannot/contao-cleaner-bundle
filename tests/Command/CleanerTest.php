@@ -10,7 +10,7 @@ namespace HeimrichHannot\CleanerBundle\Tests\Command;
 
 use Contao\System;
 use Contao\TestCase\ContaoTestCase;
-use HeimrichHannot\CleanerBundle\Command\Cleaner;
+use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
 use HeimrichHannot\CleanerBundle\Model\CleanerModel;
 
 class CleanerTest extends ContaoTestCase
@@ -30,7 +30,7 @@ class CleanerTest extends ContaoTestCase
     public function testGetMaxAgeCondition()
     {
         $framework = $this->mockContaoFramework();
-        $cleaner = new Cleaner($framework, 'daily');
+        $cleaner = new CleanerCommand($framework, 'daily');
 
         $maxAge = serialize(['unit' => 'm', 'value' => 1]);
         $objCleaner = $this->mockClassWithProperties(CleanerModel::class, ['dataContainer' => 'tl_news', 'maxAge' => $maxAge, 'maxAgeField' => 'dateAdded']);
