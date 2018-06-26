@@ -6,14 +6,14 @@
  * @license LGPL-3.0-or-later
  */
 
-namespace HeimrichHannot\CleanerBundle\Tests\Cron;
+namespace HeimrichHannot\CleanerBundle\Tests\Command;
 
 use Contao\System;
 use Contao\TestCase\ContaoTestCase;
 use HeimrichHannot\CleanerBundle\Command\Cleaner;
 use HeimrichHannot\CleanerBundle\Model\CleanerModel;
 
-class CommandCleanerTest extends ContaoTestCase
+class CleanerTest extends ContaoTestCase
 {
     public function setUp()
     {

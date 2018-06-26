@@ -11,10 +11,10 @@ $GLOBALS['BE_MOD']['system']['cleaner'] = [
 /**
  * Crons
  */
-$GLOBALS['TL_CRON']['minutely']['runMinutelyCleaner'] = ['huh.cleaner.cron.command.minutely', 'run'];
-$GLOBALS['TL_CRON']['hourly']['runHourlyCleaner']     = ['huh.cleaner.cron.command.hourly', 'run'];
-$GLOBALS['TL_CRON']['daily']['runDailyCleaner']       = ['huh.cleaner.cron.command.daily', 'run'];
-$GLOBALS['TL_CRON']['weekly']['runWeeklyCleaner']     = ['huh.cleaner.cron.command.weekly', 'run'];
+$GLOBALS['TL_CRON']['minutely']['runMinutelyCleaner'] = ['huh.cleaner.command.minutely', 'run'];
+$GLOBALS['TL_CRON']['hourly']['runHourlyCleaner']     = ['huh.cleaner.command.hourly', 'run'];
+$GLOBALS['TL_CRON']['daily']['runDailyCleaner']       = ['huh.cleaner.command.daily', 'run'];
+$GLOBALS['TL_CRON']['weekly']['runWeeklyCleaner']     = ['huh.cleaner.command.weekly', 'run'];
 
 /**
  * Models

@@ -1,5 +1,5 @@
 parameters:
-  huh.command.minutely: minutly
+  huh.command.minutely: minutely
   huh.command.hourly: hourly
   huh.command.daily: daily
   huh.command.weekly: weekly

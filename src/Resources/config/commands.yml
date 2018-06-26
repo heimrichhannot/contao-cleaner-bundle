@@ -7,7 +7,7 @@ services:
             calls:
                 - ["setFramework", ["@contao.framework"]]
 
-    huh.cleaner.cron.command.minutely:
+    huh.cleaner.command.minutely:
       public: true
       class: HeimrichHannot\CleanerBundle\Command\Cleaner
       calls:
@@ -16,7 +16,7 @@ services:
           - '%huh.command.minutely%'
       arguments:
         - "@contao.framework"
-    huh.cleaner.cron.command.hourly:
+    huh.cleaner.command.hourly:
       public: true
       class: HeimrichHannot\CleanerBundle\Command\Cleaner
       calls:
@@ -25,7 +25,7 @@ services:
               - '%huh.command.hourly%'
       arguments:
         - "@contao.framework"
-    huh.cleaner.cron.command.daily:
+    huh.cleaner.command.daily:
       public: true
       class: HeimrichHannot\CleanerBundle\Command\Cleaner
       calls:
@@ -34,7 +34,7 @@ services:
               - '%huh.command.daily%'
       arguments:
         - "@contao.framework"
-    huh.cleaner.cron.command.weekly:
+    huh.cleaner.command.weekly:
       public: true
       class: HeimrichHannot\CleanerBundle\Command\Cleaner
       calls:
