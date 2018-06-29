@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.1.3] - 2018-06-26
+
+### Fixed
+- switched deletion of entities to database -> there's not always a model for a db table
+
 ## [2.1.2] - 2018-06-26
 
 ### Fixed

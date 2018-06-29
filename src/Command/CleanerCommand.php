@@ -12,6 +12,7 @@ use Contao\Config;
 use Contao\CoreBundle\Command\AbstractLockedCommand;
 use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
 use Contao\CoreBundle\Framework\FrameworkAwareTrait;
+use Contao\Database;
 use Contao\Folder;
 use Contao\StringUtil;
 use Contao\System;
@@ -120,19 +121,18 @@ class CleanerCommand extends AbstractLockedCommand
                         $removedCount = 0;
 
                         if ($result->numRows > 0) {
-                            $ids = $result->fetchEach('id');
+                            foreach ($result->fetchEach('id') as $id) {
+                                $db = Database::getInstance();
 
-                            if (null !== ($models = System::getContainer()->get('huh.utils.model')->findModelInstancesBy($objCleaners->dataContainer, [
-                                    'column' => ["$objCleaners->dataContainer.id IN(".implode(',', array_map('intval', $ids)).')'],
-                                    'value' => null,
-                                    'return' => 'Collection',
-                                ], []))) {
-                                while ($models->next()) {
-                                    $data = $models->row();
+                                $singleResult = $db->prepare("SELECT * FROM $objCleaners->dataContainer WHERE $objCleaners->dataContainer.id=?")->limit(1)->execute($id);
 
-                                    $affectedRows = $models->delete();
+                                if ($singleResult->numRows > 0) {
+                                    $data = $singleResult->row();
+                                    $data['table'] = $objCleaners->dataContainer;
 
-                                    if ($affectedRows > 0 && $objCleaners->addPrivacyProtocolEntry) {
+                                    $deleteResult = $db->prepare("DELETE FROM $objCleaners->dataContainer WHERE $objCleaners->dataContainer.id=?")->execute($id);
+
+                                    if ($deleteResult->affectedRows > 0 && $objCleaners->addPrivacyProtocolEntry) {
                                         ++$removedCount;
 
                                         $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
