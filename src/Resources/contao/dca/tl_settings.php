@@ -5,7 +5,7 @@ $arrDca = &$GLOBALS['TL_DCA']['tl_settings'];
 /**
  * Palettes
  */
-$arrDca['palettes']['default'] .= '{cleaner_legend},cleanerOrder;';
+$arrDca['palettes']['default'] .= ';{cleaner_legend},cleanerOrder;';
 
 /**
  * Fields

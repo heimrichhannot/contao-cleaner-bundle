@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.1.4] - 2018-08-06
+
+### Fixed
+- settings palette
+
 ## [2.1.3] - 2018-06-26
 
 ### Fixed
