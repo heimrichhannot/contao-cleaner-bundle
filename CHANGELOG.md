@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2018-10-25
+
+### Added
+- new cleaner type for dependent entities
+
 ## [2.1.4] - 2018-08-06
 
 ### Fixed
