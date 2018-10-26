@@ -227,7 +227,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'options_callback' => ['HeimrichHannot\CleanerBundle\Backend\Cleaner', 'getFieldsAsOptions'],
             'exclude'          => true,
             'eval'             => ['includeBlankOption' => true, 'tl_class' => 'w50 ', 'mandatory' => true],
-            'sql'              => "blob NULL",
+            'sql'              => "varchar(64) NOT NULL default ''",
         ],
     ],
 ];
