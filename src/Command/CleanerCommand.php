@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2018 Heimrich & Hannot GmbH
+ * Copyright (c) 2019 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -100,7 +100,7 @@ class CleanerCommand extends AbstractLockedCommand
         $arrOptions = [];
         $db = Database::getInstance();
 
-        if (count($arrOrder) > 0) {
+        if (\count($arrOrder) > 0) {
             $arrOptions = [
                 'order' => 'FIELD(id,'.implode(',', $arrOrder).')',
             ];
@@ -196,13 +196,13 @@ class CleanerCommand extends AbstractLockedCommand
                                 break;
                             case static::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS:
                                 if (!$objCleaners->whereCondition) {
-                                    continue 2;
+                                    continue 3;
                                 }
 
                                 $arrFields = StringUtil::deserialize($objCleaners->entityFields, true);
 
                                 if (empty($arrFields)) {
-                                    continue 2;
+                                    continue 3;
                                 }
 
                                 $strQuery = "SELECT * FROM $objCleaners->dataContainer WHERE ($objCleaners->whereCondition)";
@@ -223,7 +223,7 @@ class CleanerCommand extends AbstractLockedCommand
                                             // deserialize if necessary
                                             $varValue = StringUtil::deserialize($objInstances->{$strField});
 
-                                            if (!is_array($varValue)) {
+                                            if (!\is_array($varValue)) {
                                                 $varValue = [$varValue];
                                             }
 

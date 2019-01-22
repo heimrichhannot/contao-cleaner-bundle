@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.2.2] - 2019-01-22
+
+### Fixed
+- continue 2 issue in command
+
 ## [2.2.1] - 2018-10-26
 
 ### Changed

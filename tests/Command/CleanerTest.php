@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2018 Heimrich & Hannot GmbH
+ * Copyright (c) 2019 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -19,8 +19,8 @@ class CleanerTest extends ContaoTestCase
     {
         parent::setUp();
 
-        if (!defined('TL_ROOT')) {
-            define('TL_ROOT', '/');
+        if (!\defined('TL_ROOT')) {
+            \define('TL_ROOT', '/');
         }
 
         $container = $this->mockContainer();

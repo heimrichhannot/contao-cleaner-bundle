@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2018 Heimrich & Hannot GmbH
+ * Copyright (c) 2019 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -59,8 +59,8 @@ class PluginTest extends ContaoTestCase
 
         static::assertCount(1, $bundles);
         static::assertInstanceOf(BundleConfig::class, $bundles[0]);
-        static::assertEquals(HeimrichHannotContaoCleanerBundle::class, $bundles[0]->getName());
-        static::assertEquals([ContaoCoreBundle::class], $bundles[0]->getLoadAfter());
+        static::assertSame(HeimrichHannotContaoCleanerBundle::class, $bundles[0]->getName());
+        static::assertSame([ContaoCoreBundle::class], $bundles[0]->getLoadAfter());
     }
 
     /**
