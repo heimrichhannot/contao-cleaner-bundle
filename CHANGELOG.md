@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.2.3] - 2019-03-06
+
+### Fixed
+- continue 2 issue in command for PHP 7.3
+
 ## [2.2.2] - 2019-01-22
 
 ### Fixed

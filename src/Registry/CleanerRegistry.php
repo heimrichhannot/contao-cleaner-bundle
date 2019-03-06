@@ -33,7 +33,7 @@ class CleanerRegistry
      * @param mixed $value
      * @param array $options
      *
-     * @return \Contao\Model\Collection|null|static
+     * @return \Contao\Model\Collection|static|null
      */
     public function findBy($column, $value, array $options = [])
     {

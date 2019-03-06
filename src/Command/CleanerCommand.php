@@ -124,7 +124,7 @@ class CleanerCommand extends AbstractLockedCommand
                         $removedCount = 0;
 
                         if (0 == $result->numRows) {
-                            continue;
+                            continue 2;
                         }
 
                         foreach ($result->fetchEach('id') as $id) {
@@ -161,7 +161,7 @@ class CleanerCommand extends AbstractLockedCommand
                         $dependenceEntities = $db->execute(html_entity_decode($query));
 
                         if (0 == $dependenceEntities->numRows) {
-                            continue;
+                            continue 2;
                         }
 
                         $dependenceEntities = $dependenceEntities->fetchEach('id');
@@ -170,7 +170,7 @@ class CleanerCommand extends AbstractLockedCommand
                         $cleanEntities = $db->execute(html_entity_decode($query));
 
                         if (0 == $cleanEntities->numRows) {
-                            continue;
+                            continue 2;
                         }
 
                         while ($cleanEntities->next()) {
