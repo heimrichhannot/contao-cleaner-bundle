@@ -8,16 +8,8 @@
 
 namespace HeimrichHannot\CleanerBundle;
 
-use HeimrichHannot\BeExplanationBundle\DependencyInjection\ContaoCleanerExtension;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class HeimrichHannotContaoCleanerBundle extends Bundle
 {
-    /**
-     * @return ContaoCleanerExtension
-     */
-    public function getContainerExtension()
-    {
-        return new ContaoCleanerExtension();
-    }
 }

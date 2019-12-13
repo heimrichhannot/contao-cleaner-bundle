@@ -123,7 +123,10 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dataContainer'        => [
             'inputType'        => 'select',
             'label'            => &$GLOBALS['TL_LANG']['tl_cleaner']['dataContainer'],
-            'options_callback' => ['huh.utils.dca', 'getDataContainers'],
+            'options_callback' => [
+                \HeimrichHannot\CleanerBundle\DataContainer\CleanerContainer::class,
+                'onDataContainerOptionsCallback'
+            ],
             'eval'             => [
                 'chosen'             => true,
                 'includeBlankOption' => true,

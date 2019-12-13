@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] - 2019-12-13
+- updated cleaner entity selection to show all and only database datacontainers 
+- updated dependencies
+- some code enhancements
+
 ## [2.2.3] - 2019-03-06
 
 ### Fixed
