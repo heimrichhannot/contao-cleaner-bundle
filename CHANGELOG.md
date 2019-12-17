@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.3.1] - 2019-12-17
+- fixes module leftovers in composer.json
+- added licence file
+
 ## [2.3.0] - 2019-12-13
 - updated cleaner entity selection to show all and only database datacontainers 
 - updated dependencies
