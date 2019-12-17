@@ -6,17 +6,17 @@
     "cleaner",
     "entity",
     "file",
-    "module",
+    "bundle",
     "developer"
   ],
-  "type": "contao-module",
-  "homepage": "https://github.com/heimrichhannot/contao-cleaner",
+  "type": "contao-bundle",
+  "homepage": "https://github.com/heimrichhannot/contao-cleaner-bundle",
   "license": "LGPL-3.0-or-later",
   "authors": [
     {
       "name": "Heimrich & Hannot",
       "email": "digitales@heimrich-hannot.de",
-      "homepage": "http://www.heimrich-hannot.de",
+      "homepage": "https://www.heimrich-hannot.de",
       "role": "Developer"
     }
   ],
