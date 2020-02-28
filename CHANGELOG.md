@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.4.0] - 2020-02-28
+- fixes for Contao 4.9
+
 ## [2.3.1] - 2019-12-17
 - fixes module leftovers in composer.json
 - added licence file
