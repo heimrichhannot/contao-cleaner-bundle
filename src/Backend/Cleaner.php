@@ -27,8 +27,6 @@ class Cleaner extends Controller
     /**
      * get tables.
      *
-     * @param DataContainer $dc
-     *
      * @return array
      */
     public static function getTables(DataContainer $dc)

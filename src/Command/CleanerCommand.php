@@ -9,6 +9,7 @@
 namespace HeimrichHannot\CleanerBundle\Command;
 
 use Contao\Config;
+use Contao\Controller;
 use Contao\CoreBundle\Command\AbstractLockedCommand;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Framework\FrameworkAwareTrait;
@@ -16,6 +17,7 @@ use Contao\Database;
 use Contao\Folder;
 use Contao\StringUtil;
 use Contao\System;
+use HeimrichHannot\UtilsBundle\Driver\DC_Table_Utils;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,19 +31,21 @@ class CleanerCommand extends AbstractLockedCommand
     const TYPE_DEPENDENT_ENTITY = 'dependent_entity';
     const TYPE_FILE = 'file';
 
-    const TYPES = [
-        self::TYPE_ENTITY,
-        self::TYPE_DEPENDENT_ENTITY,
-        self::TYPE_FILE,
-    ];
+    const TYPES
+        = [
+            self::TYPE_ENTITY,
+            self::TYPE_DEPENDENT_ENTITY,
+            self::TYPE_FILE,
+        ];
 
     const FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS = 'entityFields';
     const FILEDIR_RETRIEVAL_MODE_DIRECTORY = 'directory';
 
-    const FILEDIR_RETRIEVAL_MODES = [
-        self::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS,
-        self::FILEDIR_RETRIEVAL_MODE_DIRECTORY,
-    ];
+    const FILEDIR_RETRIEVAL_MODES
+        = [
+            self::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS,
+            self::FILEDIR_RETRIEVAL_MODE_DIRECTORY,
+        ];
 
     /**
      * @var SymfonyStyle
@@ -69,17 +73,11 @@ class CleanerCommand extends AbstractLockedCommand
         parent::__construct();
     }
 
-    /**
-     * @return string
-     */
     public function getInterval(): string
     {
         return $this->interval;
     }
 
-    /**
-     * @param string $interval
-     */
     public function setInterval(string $interval): void
     {
         $this->interval = $interval;
@@ -102,7 +100,10 @@ class CleanerCommand extends AbstractLockedCommand
             ];
         }
 
-        if (null !== ($objCleaners = System::getContainer()->get('huh.cleaner.registry.cleaner')->findBy(['published=?', 'period=?'], [true, $this->interval], $arrOptions))) {
+        if (null !== ($objCleaners = System::getContainer()->get('huh.cleaner.registry.cleaner')->findBy([
+                'published=?',
+                'period=?',
+            ], [true, $this->interval], $arrOptions))) {
             while ($objCleaners->next()) {
                 switch ($objCleaners->type) {
                     case static::TYPE_ENTITY:
@@ -113,7 +114,8 @@ class CleanerCommand extends AbstractLockedCommand
                         $strQuery = "SELECT id FROM $objCleaners->dataContainer WHERE ($objCleaners->whereCondition)";
 
                         if ($objCleaners->addMaxAge) {
-                            $strQuery .= $this->getMaxAgeCondition($objCleaners->dataContainer, $objCleaners->maxAgeField, $objCleaners->maxAge);
+                            $strQuery .= $this->getMaxAgeCondition($objCleaners->dataContainer,
+                                $objCleaners->maxAgeField, $objCleaners->maxAge);
                         }
 
                         $result = $db->execute(html_entity_decode($strQuery));
@@ -140,7 +142,7 @@ class CleanerCommand extends AbstractLockedCommand
                         }
 
                         $this->output->writeln("<fg=green>Cleanup table '".$objCleaners->dataContainer."', removed ".$removedCount
-                                               .' entries ['.$objCleaners->title.'].</>');
+                            .' entries ['.$objCleaners->title.'].</>');
 
                         break;
                     case static::TYPE_DEPENDENT_ENTITY:
@@ -151,7 +153,8 @@ class CleanerCommand extends AbstractLockedCommand
                         $query = "SELECT * FROM $objCleaners->dependentTable WHERE $objCleaners->whereCondition";
 
                         if ($objCleaners->addMaxAge) {
-                            $query .= static::getMaxAgeCondition($objCleaners->dependentTable, $objCleaners->maxAgeField, $objCleaners->maxAge);
+                            $query .= static::getMaxAgeCondition($objCleaners->dependentTable,
+                                $objCleaners->maxAgeField, $objCleaners->maxAge);
                         }
 
                         $dependenceEntities = $db->execute(html_entity_decode($query));
@@ -161,7 +164,8 @@ class CleanerCommand extends AbstractLockedCommand
                         }
 
                         $dependenceEntities = $dependenceEntities->fetchEach('id');
-                        $query = "SELECT * FROM $objCleaners->dataContainer WHERE $objCleaners->dataContainer.$objCleaners->dependentField IN (".implode(',', $dependenceEntities).')';
+                        $query = "SELECT * FROM $objCleaners->dataContainer WHERE $objCleaners->dataContainer.$objCleaners->dependentField IN (".implode(',',
+                                $dependenceEntities).')';
 
                         $cleanEntities = $db->execute(html_entity_decode($query));
 
@@ -230,7 +234,7 @@ class CleanerCommand extends AbstractLockedCommand
 
                                                 if (true === $objFile->delete()) {
                                                     $this->output->writeln("<fg=green>Cleanup files, removed file '".$objFile->path.' ['
-                                                                           .$objCleaners->title.'].</>');
+                                                        .$objCleaners->title.'].</>');
                                                 }
                                             }
                                         }
@@ -246,10 +250,6 @@ class CleanerCommand extends AbstractLockedCommand
     }
 
     /**
-     * @param string $table
-     * @param string $maxAgeField
-     * @param string $maxAge
-     *
      * @return string
      */
     public function getMaxAgeCondition(string $table, string $maxAgeField, string $maxAge)
@@ -323,8 +323,11 @@ class CleanerCommand extends AbstractLockedCommand
         $data = $entity->row();
         $data['table'] = $cleaner->dataContainer;
 
-        $deleteResult =
-            Database::getInstance()->prepare("DELETE FROM $cleaner->dataContainer WHERE $cleaner->dataContainer.id=?")->execute($entity->id);
+        if ($cleaner->useEntityOnDeleteCallback) {
+            $this->applyOnDeleteCallback($entity, $cleaner);
+        }
+
+        $deleteResult = Database::getInstance()->prepare("DELETE FROM $cleaner->dataContainer WHERE $cleaner->dataContainer.id=?")->execute($entity->id);
 
         if ($deleteResult->affectedRows > 0 && $cleaner->addPrivacyProtocolEntry) {
             $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
@@ -344,5 +347,28 @@ class CleanerCommand extends AbstractLockedCommand
         }
 
         return false;
+    }
+
+    /**
+     * @param $entity
+     * @param $cleaner
+     */
+    protected function applyOnDeleteCallback($entity, $cleaner): void
+    {
+        Controller::loadDataContainer($cleaner->dataContainer);
+
+        if (\is_array($GLOBALS['TL_DCA'][$cleaner->dataContainer]['config']['ondelete_callback'])) {
+            $dc = new DC_Table_Utils($cleaner->dataContainer);
+            $dc->activeRecord = $entity->row();
+            $dc->id = $entity->id;
+
+            foreach ($GLOBALS['TL_DCA'][$cleaner->dataContainer]['config']['ondelete_callback'] as $callback) {
+                if (\is_array($callback)) {
+                    Controller::importStatic($callback[0])->{$callback[1]}($dc, 0);
+                } elseif (\is_callable($callback)) {
+                    $callback($dc, 0);
+                }
+            }
+        }
     }
 }

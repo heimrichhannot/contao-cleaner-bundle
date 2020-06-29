@@ -20,8 +20,6 @@ class CleanerRegistry
 
     /**
      * Constructor.
-     *
-     * @param ContaoFramework $framework
      */
     public function __construct(ContaoFramework $framework)
     {
@@ -31,7 +29,6 @@ class CleanerRegistry
     /**
      * @param mixed $column
      * @param mixed $value
-     * @param array $options
      *
      * @return \Contao\Model\Collection|static|null
      */

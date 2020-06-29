@@ -77,8 +77,6 @@ class PoorManCronController
     /**
      * Run cleaner:execute with given interval.
      *
-     * @param string $interval
-     *
      * @throws \Exception When binding input fails. Bypass this by calling {@link ignoreValidationErrors()}.
      *
      * @return string

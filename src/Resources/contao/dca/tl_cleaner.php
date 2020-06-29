@@ -66,8 +66,8 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
     'palettes'    => [
         '__selector__'                                                              => ['type', 'fileDirRetrievalMode', 'addMaxAge'],
         'default'                                                                   => '{general_legend},type;',
-        \HeimrichHannot\CleanerBundle\Command\CleanerCommand::TYPE_ENTITY           => '{general_legend},type,title;{config_legend},dataContainer,period,whereCondition,addMaxAge;{publish_legend},published;',
-        \HeimrichHannot\CleanerBundle\Command\CleanerCommand::TYPE_DEPENDENT_ENTITY => '{general_legend},type,title;{config_legend},dependentTable,whereCondition,dataContainer,dependentField,period,,addMaxAge;{publish_legend},published;',
+        \HeimrichHannot\CleanerBundle\Command\CleanerCommand::TYPE_ENTITY           => '{general_legend},type,title;{config_legend},dataContainer,period,whereCondition,addMaxAge,useEntityOnDeleteCallback;{publish_legend},published;',
+        \HeimrichHannot\CleanerBundle\Command\CleanerCommand::TYPE_DEPENDENT_ENTITY => '{general_legend},type,title;{config_legend},dependentTable,whereCondition,dataContainer,dependentField,period,addMaxAge,useEntityOnDeleteCallback;{publish_legend},published;',
         \HeimrichHannot\CleanerBundle\Command\CleanerCommand::TYPE_FILE             => '{general_legend},type,title;{config_legend},period,fileDirRetrievalMode;{publish_legend},published;',
     ],
     'subpalettes' => [
@@ -231,6 +231,13 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'exclude'          => true,
             'eval'             => ['includeBlankOption' => true, 'tl_class' => 'w50 ', 'mandatory' => true],
             'sql'              => "varchar(64) NOT NULL default ''",
+        ],
+        'useEntityOnDeleteCallback'       => [
+            'label'            => &$GLOBALS['TL_LANG']['tl_cleaner']['useEntityOnDeleteCallback'],
+            'inputType'        => 'checkbox',
+            'exclude'          => true,
+            'eval'             => ['tl_class' => 'clr w50 '],
+            'sql'              => "char(1) NOT NULL default ''",
         ],
     ],
 ];

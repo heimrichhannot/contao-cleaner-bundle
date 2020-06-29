@@ -29,6 +29,7 @@ $arrLang['directory']            = ['Zu leerendes Verzeichnis', 'Wählen Sie hie
 $arrLang['addGitKeepAfterClean'] = ['.gitkeep nach dem Leeren erzeugen', 'Wählen Sie diese Option, wenn Sie nach dem Leeren des Verzeichnisses in diesem eine .gitkeep-Datei erzeugen wollen. Sinnvoll, wenn das Verzeichnis auch "leer" in ein git-Repository eingecheckt werden soll.'];
 $arrLang['dependentTable'] = ['abhängige Tabelle','Wählen Sie hier die Tabelle die die Entität beinhaltet von welcher die Löschung abhängt.'];
 $arrLang['dependentField'] = ['Feld','Wählen Sie hier das Feld aus über das die zu löschende Entität mit der abhängigen Entität verbunden ist.'];
+$arrLang['useEntityOnDeleteCallback'] = ['ondelete_callback der Entität nutzen','Wählen Sie diese Option, wenn der ondelete_callback der Entität beim Löschen ausgeführt werden soll.'];
 
 /**
  * Legends

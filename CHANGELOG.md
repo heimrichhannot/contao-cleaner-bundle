@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.5.0] - 2020-06-29
+- added optional regarding ondelete_callback of entity that will be cleaned
+
 ## [2.4.0] - 2020-02-28
 - fixes for Contao 4.9
 
