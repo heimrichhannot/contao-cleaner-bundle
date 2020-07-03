@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.5.1] - 2020-07-03
+- added new tag for packagist
+
 ## [2.5.0] - 2020-06-29
 - added optional regarding ondelete_callback of entity that will be cleaned
 
