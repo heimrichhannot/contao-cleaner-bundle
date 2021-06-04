@@ -242,7 +242,8 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
     ],
 ];
 
-if (System::getContainer()->get('huh.utils.container')->isBundleActive('privacy')) {
+if (System::getContainer()->get('huh.utils.container')->isBundleActive('privacy') ||
+    class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle')) {
     $dca             = &$GLOBALS['TL_DCA']['tl_cleaner'];
     $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
     
