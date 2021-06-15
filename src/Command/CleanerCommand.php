@@ -17,11 +17,14 @@ use Contao\Database;
 use Contao\Folder;
 use Contao\StringUtil;
 use Contao\System;
+use HeimrichHannot\CleanerBundle\Event\AfterCleanEvent;
+use HeimrichHannot\CleanerBundle\Event\BeforeCleanEvent;
 use HeimrichHannot\UtilsBundle\Driver\DC_Table_Utils;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class CleanerCommand extends AbstractLockedCommand
 {
@@ -60,15 +63,20 @@ class CleanerCommand extends AbstractLockedCommand
      * @var OutputInterface
      */
     protected $output;
+    /**
+     * @var EventDispatcherInterface
+     */
+    protected $eventDispatcher;
 
     /**
      * @var string
      */
     private $interval;
 
-    public function __construct(ContaoFramework $framework)
+    public function __construct(ContaoFramework $framework, EventDispatcherInterface $eventDispatcher)
     {
         $this->framework = $framework;
+        $this->eventDispatcher = $eventDispatcher;
 
         parent::__construct();
     }
@@ -145,6 +153,7 @@ class CleanerCommand extends AbstractLockedCommand
                             .' entries ['.$objCleaners->title.'].</>');
 
                         break;
+
                     case static::TYPE_DEPENDENT_ENTITY:
                         if (!$objCleaners->whereCondition) {
                             continue 2;
@@ -178,6 +187,7 @@ class CleanerCommand extends AbstractLockedCommand
                         }
 
                         break;
+
                     case static::TYPE_FILE:
                         switch ($objCleaners->fileDirRetrievalMode) {
                             case static::FILEDIR_RETRIEVAL_MODE_DIRECTORY:
@@ -194,6 +204,7 @@ class CleanerCommand extends AbstractLockedCommand
                                 $this->output->writeln("<fg=green>Cleanup folder '".$strPath.' ['.$objCleaners->title.'].</>');
 
                                 break;
+
                             case static::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS:
                                 if (!$objCleaners->whereCondition) {
                                     continue 3;
@@ -240,6 +251,7 @@ class CleanerCommand extends AbstractLockedCommand
                                         }
                                     }
                                 }
+
                                 break;
                         }
 
@@ -257,15 +269,21 @@ class CleanerCommand extends AbstractLockedCommand
         $arrMaxAge = StringUtil::deserialize($maxAge, true);
 
         $intFactor = 1;
+
         switch ($arrMaxAge['unit']) {
             case 'm':
                 $intFactor = 60;
+
                 break;
+
             case 'h':
                 $intFactor = 60 * 60;
+
                 break;
+
             case 'd':
                 $intFactor = 24 * 60 * 60;
+
                 break;
         }
 
@@ -323,25 +341,37 @@ class CleanerCommand extends AbstractLockedCommand
         $data = $entity->row();
         $data['table'] = $cleaner->dataContainer;
 
+        /** @var BeforeCleanEvent $event */
+        $event = $this->eventDispatcher->dispatch(BeforeCleanEvent::NAME, new BeforeCleanEvent($data, $cleaner->current(), false));
+
+        if ($event->isSkipped()) {
+            return false;
+        }
+
         if ($cleaner->useEntityOnDeleteCallback) {
             $this->applyOnDeleteCallback($entity, $cleaner);
         }
 
         $deleteResult = Database::getInstance()->prepare("DELETE FROM $cleaner->dataContainer WHERE $cleaner->dataContainer.id=?")->execute($entity->id);
 
-        if ($deleteResult->affectedRows > 0 && $cleaner->addPrivacyProtocolEntry) {
-            $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
+        if ($deleteResult->affectedRows > 0) {
+            if ($cleaner->addPrivacyProtocolEntry) {
+                $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
 
-            if ($cleaner->privacyProtocolEntryDescription) {
-                $data['description'] = $cleaner->privacyProtocolEntryDescription;
+                if ($cleaner->privacyProtocolEntryDescription) {
+                    $data['description'] = $cleaner->privacyProtocolEntryDescription;
+                }
+
+                $protocolManager->addEntry(
+                    $cleaner->privacyProtocolEntryType,
+                    $cleaner->privacyProtocolEntryArchive,
+                    $data,
+                    'heimrichhannot/contao-cleaner-bundle'
+                );
             }
 
-            $protocolManager->addEntry(
-                $cleaner->privacyProtocolEntryType,
-                $cleaner->privacyProtocolEntryArchive,
-                $data,
-                'heimrichhannot/contao-cleaner-bundle'
-            );
+            /* @var AfterCleanEvent $event */
+            $this->eventDispatcher->dispatch(AfterCleanEvent::NAME, new AfterCleanEvent($data, $cleaner->current()));
 
             return true;
         }

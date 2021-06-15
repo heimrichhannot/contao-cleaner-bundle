@@ -1,45 +1,38 @@
 services:
-    _defaults:
-        autoconfigure: true
+  _defaults:
+    autoconfigure: true
+    autowire: true
 
-    _instanceof:
-        Contao\CoreBundle\Framework\FrameworkAwareInterface:
-            calls:
-                - ["setFramework", ["@contao.framework"]]
-
-    huh.cleaner.command.minutely:
-      public: true
-      class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
+  _instanceof:
+    Contao\CoreBundle\Framework\FrameworkAwareInterface:
       calls:
-        - method : setInterval
-          arguments:
+        - [ "setFramework", [ "@contao.framework" ] ]
+
+  huh.cleaner.command.minutely:
+    public: true
+    class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
+    calls:
+      - method: setInterval
+        arguments:
           - '%huh.command.minutely%'
-      arguments:
-        - "@contao.framework"
-    huh.cleaner.command.hourly:
-      public: true
-      class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
-      calls:
-          - method : setInterval
-            arguments:
-              - '%huh.command.hourly%'
-      arguments:
-        - "@contao.framework"
-    huh.cleaner.command.daily:
-      public: true
-      class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
-      calls:
-          - method : setInterval
-            arguments:
-              - '%huh.command.daily%'
-      arguments:
-        - "@contao.framework"
-    huh.cleaner.command.weekly:
-      public: true
-      class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
-      calls:
-         - method : setInterval
-           arguments:
-           - '%huh.command.weekly%'
-      arguments:
-        - "@contao.framework"
+  huh.cleaner.command.hourly:
+    public: true
+    class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
+    calls:
+      - method: setInterval
+        arguments:
+          - '%huh.command.hourly%'
+  huh.cleaner.command.daily:
+    public: true
+    class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
+    calls:
+      - method: setInterval
+        arguments:
+          - '%huh.command.daily%'
+  huh.cleaner.command.weekly:
+    public: true
+    class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
+    calls:
+      - method: setInterval
+        arguments:
+          - '%huh.command.weekly%'

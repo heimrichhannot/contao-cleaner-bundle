@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.0] - 2021-06-15
+
+- added 2 new events:
+  - `huh.cleaner.event.before_clean`
+  - `huh.cleaner.event.after_clean`
+- fixed counting issue
+- updated code style
+- updated service definitions
+
 ## [2.5.2] - 2021-06-04
 
 - adjustments for privacy-bundle

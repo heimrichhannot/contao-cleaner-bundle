@@ -5,8 +5,21 @@
 
 # Cleaner Bundle
 
-This bundle adds cleaner functionality for periodically removing arbitrary entities and/or files fulfilling a certain condition (using TL_CRON or your server's cron).
+This bundle adds cleaner functionality for periodically removing arbitrary entities and/or files fulfilling a certain
+condition (using poor man's cron or your server's cron).
 
 ![alt Archive](docs/screenshot.png)
 
 *Cleaner configuration*
+
+## Install
+
+1. Install via composer (`composer require heimrichhannot/contao-cleaner-bundle`) or contao manager
+1. Update your database
+
+## Events
+
+Event                                              | Class | Description
+-------------------------------------------------- | ----- | -----------
+huh.cleaner.event.before_clean                     | BeforeCleanEvent | Run before the entity is cleaned. Use `setSkipped()` to skip the cleaning of the passed in entity.
+huh.cleaner.event.after_clean                     | AfterCleanEvent | Run after the entity is cleaned.
