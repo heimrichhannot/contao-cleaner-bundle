@@ -13,17 +13,23 @@ use Contao\System;
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class PoorManCronController
 {
+    /**
+     * @var EventDispatcherInterface
+     */
+    protected $eventDispatcher;
     /**
      * @var ContaoFramework
      */
     private $framework;
 
-    public function __construct(ContaoFramework $framework)
+    public function __construct(ContaoFramework $framework, EventDispatcherInterface $eventDispatcher)
     {
         $this->framework = $framework;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -83,7 +89,7 @@ class PoorManCronController
      */
     public function run(string $interval)
     {
-        $command = new CleanerCommand($this->framework);
+        $command = new CleanerCommand($this->framework, $this->eventDispatcher);
         $command->setContainer(System::getContainer());
 
         $input = new ArrayInput(

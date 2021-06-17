@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.1] - 2021-06-17
+
+- fixed dep issue
+
 ## [2.6.0] - 2021-06-15
 
 - added 2 new events:
@@ -9,7 +13,6 @@ All notable changes to this project will be documented in this file.
   - `huh.cleaner.event.after_clean`
 - fixed counting issue
 - updated code style
-- updated service definitions
 
 ## [2.5.2] - 2021-06-04
 
