@@ -2,10 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.2] - 2021-06-22
+
+- fixed argument error on PoorManCronController
+
 ## [2.6.1] - 2021-06-17
 
 - fixed dep issue
-
+PoorManCronController
 ## [2.6.0] - 2021-06-15
 
 - added 2 new events:

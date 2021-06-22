@@ -13,5 +13,4 @@ services:
   huh.cleaner.controller.poormanscron:
       public: true
       class: HeimrichHannot\CleanerBundle\Controller\PoorManCronController
-      arguments:
-        - "@contao.framework"
+      autowire: true
