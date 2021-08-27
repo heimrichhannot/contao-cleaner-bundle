@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.3] - 2021-08-27
+
+- Added: php8 support
+
 ## [2.6.2] - 2021-06-22
 
 - fixed argument error on PoorManCronController
