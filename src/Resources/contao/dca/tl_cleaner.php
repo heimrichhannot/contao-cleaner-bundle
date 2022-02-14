@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2021 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -53,7 +53,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
                 'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['delete'],
                 'href' => 'act=delete',
                 'icon' => 'delete.gif',
-                'attributes' => 'onclick="if(!confirm(\''.$GLOBALS['TL_LANG']['MSC']['deleteConfirm']
+                'attributes' => 'onclick="if(!confirm(\''.($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? null)
                                 .'\'))return false;Backend.getScrollOffset()"',
             ],
             'toggle' => [

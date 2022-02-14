@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.4] - 2022-02-14
+
+- Fixed: array index issues in php 8+
+
 ## [2.6.3] - 2021-08-27
 
 - Added: php8 support
