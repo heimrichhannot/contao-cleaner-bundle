@@ -22,8 +22,9 @@
   ],
   "require": {
     "php": "^7.1|^8.0",
-    "contao/core-bundle": "^4.4",
-    "heimrichhannot/contao-utils-bundle": "^2.124"
+    "contao/core-bundle": "^4.9",
+    "heimrichhannot/contao-utils-bundle": "^2.124",
+    "symfony/event-dispatcher-contracts": "^1.0 || ^2.0 || ^3.0"
   },
   "require-dev": {
     "contao/test-case": "^1.1",
@@ -59,9 +60,6 @@
     "psr-4": {
       "HeimrichHannot\\CleanerBundle\\Test\\": "tests/"
     }
-  },
-  "config": {
-    "preferred-install": "dist"
   },
   "extra": {
     "contao-manager-plugin": "HeimrichHannot\\CleanerBundle\\ContaoManager\\Plugin"

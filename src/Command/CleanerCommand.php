@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2021 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -342,7 +342,7 @@ class CleanerCommand extends AbstractLockedCommand
         $data['table'] = $cleaner->dataContainer;
 
         /** @var BeforeCleanEvent $event */
-        $event = $this->eventDispatcher->dispatch(BeforeCleanEvent::NAME, new BeforeCleanEvent($data, $cleaner->current(), false));
+        $event = $this->eventDispatcher->dispatch(new BeforeCleanEvent($data, $cleaner->current(), false), BeforeCleanEvent::NAME);
 
         if ($event->isSkipped()) {
             return false;
@@ -371,7 +371,7 @@ class CleanerCommand extends AbstractLockedCommand
             }
 
             /* @var AfterCleanEvent $event */
-            $this->eventDispatcher->dispatch(AfterCleanEvent::NAME, new AfterCleanEvent($data, $cleaner->current()));
+            $this->eventDispatcher->dispatch(new AfterCleanEvent($data, $cleaner->current()), AfterCleanEvent::NAME);
 
             return true;
         }

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.0] - 2022-05-10
+- Changed: minimum contao version is now 4.9
+- Fixed: symfony 5 compatibility
+
 ## [2.6.4] - 2022-02-14
 
 - Fixed: array index issues in php 8+
