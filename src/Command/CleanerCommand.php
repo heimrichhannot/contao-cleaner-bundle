@@ -68,18 +68,19 @@ class CleanerCommand extends Command
      * @var EventDispatcherInterface
      */
     protected $eventDispatcher;
-    protected string $projectDir;
+    public ?string $rootDir;
 
     /**
      * @var string
      */
     private $interval;
 
-    public function __construct(ContaoFramework $framework, EventDispatcherInterface $eventDispatcher, string $projectDir)
-    {
+    public function __construct(
+        ContaoFramework          $framework,
+        EventDispatcherInterface $eventDispatcher
+    ) {
         $this->framework = $framework;
         $this->eventDispatcher = $eventDispatcher;
-        $this->projectDir = $projectDir;
 
         parent::__construct();
     }
@@ -321,7 +322,7 @@ class CleanerCommand extends Command
 
         $this->setInterval($input->getOption('interval'));
 
-        $this->rootDir = $this->projectDir;
+        $this->rootDir = System::getContainer()->getParameter('kernel.project_dir');
 
         try {
             $this->executeCleaner();
