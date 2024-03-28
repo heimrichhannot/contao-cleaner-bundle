@@ -6,6 +6,8 @@
  * @license LGPL-3.0-or-later
  */
 
+use HeimrichHannot\UtilsBundle\Util\Utils;
+
 $GLOBALS['TL_DCA']['tl_cleaner'] = [
     'config' => [
         'dataContainer' => 'Table',
@@ -256,8 +258,9 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
     ],
 ];
 
-if (System::getContainer()->get('huh.utils.container')->isBundleActive('privacy') ||
-    class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle')) {
+if (in_array('privacy', array_keys(\Contao\System::getContainer()->getParameter('kernel.bundles'))) ||
+    class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle'))
+{
     $dca = &$GLOBALS['TL_DCA']['tl_cleaner'];
     $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
 
@@ -283,15 +286,15 @@ if (System::getContainer()->get('huh.utils.container')->isBundleActive('privacy'
     }
 }
 
-class tl_cleaner extends \Backend
+class tl_cleaner extends \Contao\Backend
 {
     public function toggleIcon($row, $href, $label, $title, $icon, $attributes)
     {
-        $objUser = \BackendUser::getInstance();
+        $objUser = \Contao\BackendUser::getInstance();
 
-        if (strlen(Input::get('tid'))) {
-            $this->toggleVisibility(Input::get('tid'), ('1' === Input::get('state')));
-            \Controller::redirect($this->getReferer());
+        if (strlen(\Contao\Input::get('tid'))) {
+            $this->toggleVisibility(\Contao\Input::get('tid'), ('1' === \Contao\Input::get('state')));
+            \Contao\Controller::redirect($this->getReferer());
         }
 
         // Check permissions AFTER checking the tid, so hacking attempts are logged
@@ -305,22 +308,24 @@ class tl_cleaner extends \Backend
             $icon = 'invisible.gif';
         }
 
-        return '<a href="'.$this->addToUrl($href).'" title="'.specialchars($title).'"'.$attributes.'>'.Image::getHtml($icon, $label)
+        return '<a href="'.$this->addToUrl($href).'" title="'.\Contao\StringUtil::specialchars($title).'"'.$attributes.'>'.\Contao\Image::getHtml($icon, $label)
                .'</a> ';
     }
 
     public function toggleVisibility($intId, $blnVisible)
     {
-        $objUser = \BackendUser::getInstance();
-        $objDatabase = \Database::getInstance();
+        $objUser = \Contao\BackendUser::getInstance();
+        $objDatabase = \Contao\Database::getInstance();
+
+        $utils = \Contao\System::getContainer()->get(Utils::class);
 
         // Check permissions to publish
         if (!$objUser->isAdmin && !$objUser->hasAccess('tl_cleaner::published', 'alexf')) {
-            \Controller::log('Not enough permissions to publish/unpublish item ID "'.$intId.'"', 'tl_cleaner toggleVisibility', TL_ERROR);
-            \Controller::redirect('contao/main.php?act=error');
+            $utils->container->log('Not enough permissions to publish/unpublish item ID "'.$intId.'"', 'tl_cleaner toggleVisibility', 'ERROR');
+            \Contao\Controller::redirect('contao/main.php?act=error');
         }
 
-        $objVersions = new Versions('tl_cleaner', $intId);
+        $objVersions = new \Contao\Versions('tl_cleaner', $intId);
         $objVersions->initialize();
 
         // Trigger the save_callback
@@ -335,7 +340,7 @@ class tl_cleaner extends \Backend
         $objDatabase->prepare('UPDATE tl_cleaner SET tstamp='.time().", published='".($blnVisible ? 1 : '')."' WHERE id=?")->execute($intId);
 
         $objVersions->create();
-        \Controller::log('A new version of record "tl_cleaner.id='.$intId.'" has been created'.$this->getParentEntries('tl_cleaner', $intId),
-            'tl_cleaner toggleVisibility()', TL_GENERAL);
+        $utils->container()->log('A new version of record "tl_cleaner.id='.$intId.'" has been created'.$this->getParentEntries('tl_cleaner', $intId),
+            'tl_cleaner toggleVisibility()', 'GENERAL');
     }
 }
