@@ -12,6 +12,7 @@ use Contao\Controller;
 use Contao\DataContainer;
 use Contao\System;
 use HeimrichHannot\FormHybrid\Backend\Module;
+use HeimrichHannot\UtilsBundle\Util\Utils;
 
 class Cleaner extends Controller
 {
@@ -21,16 +22,21 @@ class Cleaner extends Controller
             return [];
         }
 
-        return System::getContainer()->get('huh.utils.dca')->getFields($objDc->activeRecord->dataContainer);
+        $utils = System::getContainer()->get(Utils::class);
+        return $utils->dca()->getDcaFields($objDc->activeRecord->dataContainer);
     }
 
     /**
      * get tables.
      *
      * @return array
+     * @noinspection PhpUndefinedClassInspection
      */
     public static function getTables(DataContainer $dc)
     {
-        return Module::getDataContainers($dc);
+        if (class_exists(Module::classs)) {
+            return Module::getDataContainers($dc);
+        }
+        return [];
     }
 }

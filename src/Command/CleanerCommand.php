@@ -10,7 +10,6 @@ namespace HeimrichHannot\CleanerBundle\Command;
 
 use Contao\Config;
 use Contao\Controller;
-use Contao\CoreBundle\Command\AbstractLockedCommand;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Framework\FrameworkAwareTrait;
 use Contao\Database;
@@ -20,13 +19,15 @@ use Contao\System;
 use HeimrichHannot\CleanerBundle\Event\AfterCleanEvent;
 use HeimrichHannot\CleanerBundle\Event\BeforeCleanEvent;
 use HeimrichHannot\UtilsBundle\Driver\DC_Table_Utils;
+use HeimrichHannot\UtilsBundle\Util\Utils;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class CleanerCommand extends AbstractLockedCommand
+class CleanerCommand extends Command
 {
     use FrameworkAwareTrait;
 
@@ -67,14 +68,17 @@ class CleanerCommand extends AbstractLockedCommand
      * @var EventDispatcherInterface
      */
     protected $eventDispatcher;
+    public ?string $rootDir;
 
     /**
      * @var string
      */
     private $interval;
 
-    public function __construct(ContaoFramework $framework, EventDispatcherInterface $eventDispatcher)
-    {
+    public function __construct(
+        ContaoFramework          $framework,
+        EventDispatcherInterface $eventDispatcher
+    ) {
         $this->framework = $framework;
         $this->eventDispatcher = $eventDispatcher;
 
@@ -191,7 +195,8 @@ class CleanerCommand extends AbstractLockedCommand
                     case static::TYPE_FILE:
                         switch ($objCleaners->fileDirRetrievalMode) {
                             case static::FILEDIR_RETRIEVAL_MODE_DIRECTORY:
-                                $strPath = System::getContainer()->get('huh.utils.file')->getPathFromUuid($objCleaners->directory);
+                                $utils = System::getContainer()->get(Utils::class);
+                                $strPath = $utils->file()->getPathFromUuid($objCleaners->directory);
 
                                 $objFolder = new Folder($strPath);
 
@@ -317,7 +322,7 @@ class CleanerCommand extends AbstractLockedCommand
 
         $this->setInterval($input->getOption('interval'));
 
-        $this->rootDir = $this->getContainer()->getParameter('kernel.project_dir');
+        $this->rootDir = System::getContainer()->getParameter('kernel.project_dir');
 
         try {
             $this->executeCleaner();

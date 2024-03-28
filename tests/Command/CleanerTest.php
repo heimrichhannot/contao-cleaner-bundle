@@ -15,7 +15,7 @@ use HeimrichHannot\CleanerBundle\Model\CleanerModel;
 
 class CleanerTest extends ContaoTestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
