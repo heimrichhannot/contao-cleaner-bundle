@@ -32,7 +32,7 @@ class Cleaner extends Controller
      * @return array
      * @noinspection PhpUndefinedClassInspection
      */
-    public static function getTables(DataContainer $dc): array
+    public static function getTables(DataContainer $dc)
     {
         if (class_exists(Module::classs)) {
             return Module::getDataContainers($dc);

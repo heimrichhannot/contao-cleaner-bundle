@@ -5,6 +5,10 @@ parameters:
   huh.command.weekly: weekly
 
 services:
+  _defaults:
+    bind:
+      $projectDir: '%kernel.project_dir%'
+
   huh.cleaner.registry.cleaner:
     public: true
     class: HeimrichHannot\CleanerBundle\Registry\CleanerRegistry
