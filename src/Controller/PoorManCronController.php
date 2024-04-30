@@ -12,6 +12,7 @@ use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\System;
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
