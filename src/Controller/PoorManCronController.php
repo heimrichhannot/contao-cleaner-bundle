@@ -11,6 +11,7 @@ namespace HeimrichHannot\CleanerBundle\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\System;
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
+use Monolog\Logger;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -25,11 +26,19 @@ class PoorManCronController
      * @var ContaoFramework
      */
     private $framework;
+    /**
+     * @var Logger
+     */
+    private $logger;
 
-    public function __construct(ContaoFramework $framework, EventDispatcherInterface $eventDispatcher)
-    {
+    public function __construct(
+        ContaoFramework $framework,
+        EventDispatcherInterface $eventDispatcher,
+        Logger $logger
+    ) {
         $this->framework = $framework;
         $this->eventDispatcher = $eventDispatcher;
+        $this->logger = $logger;
     }
 
     /**
@@ -99,8 +108,18 @@ class PoorManCronController
         );
 
         $output = new BufferedOutput();
-        $command->run($input, $output);
 
-        return $output->fetch();
+        try
+        {
+            $command->run($input, $output);
+            $return = $output->fetch();
+            $this->logger->info($return);
+            return $return;
+        }
+        catch (\Throwable $e)
+        {
+            $this->logger->log('CRON', $e->getMessage());
+            throw $e;
+        }
     }
 }
