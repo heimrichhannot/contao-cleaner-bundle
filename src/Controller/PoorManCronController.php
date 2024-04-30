@@ -128,7 +128,7 @@ class PoorManCronController
             $command->run($input, $output);
             $return = $output->fetch();
 
-            $logger->log(LogLevel::INFO, $return, $context);
+            $logger->log(LogLevel::INFO, $return ?: 'Cleanup returned empty handed', $context);
 
             return $return;
         }
