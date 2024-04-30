@@ -35,7 +35,7 @@ class PoorManCronController
     public function __construct(
         ContaoFramework $framework,
         EventDispatcherInterface $eventDispatcher,
-        Logger $logger
+        LoggerInterface $logger
     ) {
         $this->framework = $framework;
         $this->eventDispatcher = $eventDispatcher;
