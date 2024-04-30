@@ -119,27 +119,22 @@ class PoorManCronController
         $output = new BufferedOutput();
 
         $logger = $this->container->get('monolog.logger.contao');
+        $context = ['contao' => new ContaoContext(__METHOD__, ContaoContext::CRON)];
 
         try
         {
-            $logger->log(LogLevel::INFO, 'Running poor man cron job for cleaner:execute with interval ' . $interval, [
-                'contao' => new ContaoContext(__METHOD__, ContaoContext::CRON),
-            ]);
+            $logger->log(LogLevel::INFO, 'Running poor man cron job for cleaner:execute with interval ' . $interval, $context);
 
             $command->run($input, $output);
             $return = $output->fetch();
 
-            $logger->log(LogLevel::INFO, $return, [
-                'contao' => new ContaoContext(__METHOD__, ContaoContext::CRON),
-            ]);
+            $logger->log(LogLevel::INFO, $return, $context);
 
             return $return;
         }
         catch (\Throwable $e)
         {
-            $logger->log(LogLevel::ERROR, $e->getMessage(), [
-                'contao' => new ContaoContext(__METHOD__, ContaoContext::CRON),
-            ]);
+            $logger->log(LogLevel::ERROR, $e->getMessage(), $context);
             throw $e;
         }
     }
