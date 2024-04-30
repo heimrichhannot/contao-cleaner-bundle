@@ -9,10 +9,12 @@
 namespace HeimrichHannot\CleanerBundle\Controller;
 
 use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\CoreBundle\Monolog\ContaoContext;
 use Contao\System;
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
-use Monolog\Logger;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -31,12 +33,18 @@ class PoorManCronController
      * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var ContainerInterface
+     */
+    private $container;
 
     public function __construct(
+        ContainerInterface $container,
         ContaoFramework $framework,
         EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger
     ) {
+        $this->container = $container;
         $this->framework = $framework;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger;
@@ -110,17 +118,28 @@ class PoorManCronController
 
         $output = new BufferedOutput();
 
+        $logger = $this->container->get('monolog.logger.contao');
+
         try
         {
-            $this->logger->log('CRON', 'Running poor man cron job for cleaner:execute with interval ' . $interval);
+            $logger->log(LogLevel::INFO, 'Running poor man cron job for cleaner:execute with interval ' . $interval, [
+                'contao' => new ContaoContext(__METHOD__, ContaoContext::CRON),
+            ]);
+
             $command->run($input, $output);
             $return = $output->fetch();
-            $this->logger->log('CRON', $return);
+
+            $logger->log(LogLevel::INFO, $return, [
+                'contao' => new ContaoContext(__METHOD__, ContaoContext::CRON),
+            ]);
+
             return $return;
         }
         catch (\Throwable $e)
         {
-            $this->logger->log('CRON', $e->getMessage());
+            $logger->log(LogLevel::ERROR, $e->getMessage(), [
+                'contao' => new ContaoContext(__METHOD__, ContaoContext::CRON),
+            ]);
             throw $e;
         }
     }
