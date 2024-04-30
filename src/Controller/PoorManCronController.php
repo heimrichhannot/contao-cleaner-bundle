@@ -112,6 +112,7 @@ class PoorManCronController
 
         try
         {
+            $this->logger->info('Running poor man cron job for cleaner:execute with interval ' . $interval);
             $command->run($input, $output);
             $return = $output->fetch();
             $this->logger->info($return);
