@@ -19,3 +19,7 @@ services:
     public: true
     bind:
       $projectDir: '%kernel.project_dir%'
+
+  HeimrichHannot\CleanerBundle\DataContainer\CleanerContainer:
+    class: HeimrichHannot\CleanerBundle\DataContainer\CleanerContainer
+    public: true
