@@ -1,9 +1,9 @@
 <?php
 
-/*
- * Copyright (c) 2021 Heimrich & Hannot GmbH
- *
- * @license LGPL-3.0-or-later
+/**
+ * @package HeimrichHannot Contao Cleaner Bundle
+ * @copyright Heimrich & Hannot GmbH, 2024
+ * @license https://spdx.org/licenses/LGPL-3.0-or-later.html LGPL-3.0-or-later
  */
 
 namespace HeimrichHannot\CleanerBundle\ContaoManager;
@@ -18,20 +18,23 @@ use Symfony\Component\Config\Loader\LoaderInterface;
 
 class Plugin implements BundlePluginInterface, ConfigPluginInterface
 {
-    public function getBundles(ParserInterface $parser)
+    /**
+     * {@inheritDoc}
+     */
+    public function getBundles(ParserInterface $parser): array
     {
         return [
-            BundleConfig::create(HeimrichHannotContaoCleanerBundle::class)->setLoadAfter([ContaoCoreBundle::class]),
+            BundleConfig::create(HeimrichHannotContaoCleanerBundle::class)
+                ->setLoadAfter([ContaoCoreBundle::class])
         ];
     }
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
     public function registerContainerConfiguration(LoaderInterface $loader, array $managerConfig)
     {
-        $loader->load('@HeimrichHannotContaoCleanerBundle/Resources/config/commands.yml');
-        $loader->load('@HeimrichHannotContaoCleanerBundle/Resources/config/services.yml');
-        $loader->load('@HeimrichHannotContaoCleanerBundle/Resources/config/datacontainers.yml');
+        $loader->load('@HeimrichHannotContaoCleanerBundle/config/services.yaml');
     }
 }

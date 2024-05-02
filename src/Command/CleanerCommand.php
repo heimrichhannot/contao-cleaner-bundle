@@ -10,51 +10,58 @@ namespace HeimrichHannot\CleanerBundle\Command;
 
 use Contao\Config;
 use Contao\Controller;
-use Contao\CoreBundle\Command\AbstractLockedCommand;
 use Contao\CoreBundle\Framework\ContaoFramework;
-use Contao\CoreBundle\Framework\FrameworkAwareTrait;
 use Contao\Database;
 use Contao\Folder;
 use Contao\StringUtil;
 use Contao\System;
 use HeimrichHannot\CleanerBundle\Event\AfterCleanEvent;
 use HeimrichHannot\CleanerBundle\Event\BeforeCleanEvent;
+use HeimrichHannot\CleanerBundle\Exception\InvalidIntervalException;
+use HeimrichHannot\CleanerBundle\Model\CleanerModel;
 use HeimrichHannot\UtilsBundle\Driver\DC_Table_Utils;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class CleanerCommand extends AbstractLockedCommand
+class CleanerCommand extends Command
 {
-    use FrameworkAwareTrait;
-
     const TYPE_ENTITY = 'entity';
     const TYPE_DEPENDENT_ENTITY = 'dependent_entity';
     const TYPE_FILE = 'file';
-
-    const TYPES
-        = [
-            self::TYPE_ENTITY,
-            self::TYPE_DEPENDENT_ENTITY,
-            self::TYPE_FILE,
-        ];
+    const TYPES = [
+        self::TYPE_ENTITY,
+        self::TYPE_DEPENDENT_ENTITY,
+        self::TYPE_FILE,
+    ];
 
     const FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS = 'entityFields';
     const FILEDIR_RETRIEVAL_MODE_DIRECTORY = 'directory';
+    const FILEDIR_RETRIEVAL_MODES = [
+        self::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS,
+        self::FILEDIR_RETRIEVAL_MODE_DIRECTORY,
+    ];
 
-    const FILEDIR_RETRIEVAL_MODES
-        = [
-            self::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS,
-            self::FILEDIR_RETRIEVAL_MODE_DIRECTORY,
-        ];
+    const INTERVAL_MINUTELY = 'minutely';
+    const INTERVAL_HOURLY = 'hourly';
+    const INTERVAL_DAILY = 'daily';
+    const INTERVAL_MONTHLY = 'monthly';
+    const INTERVAL_WEEKLY = 'weekly';
+    const INTERVALS = [
+        self::INTERVAL_MINUTELY,
+        self::INTERVAL_HOURLY,
+        self::INTERVAL_DAILY,
+        self::INTERVAL_MONTHLY,
+        self::INTERVAL_WEEKLY
+    ];
 
     /**
      * @var SymfonyStyle
      */
     protected $io;
-
     /**
      * @var InputInterface
      */
@@ -67,229 +74,47 @@ class CleanerCommand extends AbstractLockedCommand
      * @var EventDispatcherInterface
      */
     protected $eventDispatcher;
-
     /**
      * @var string
      */
-    private $interval;
-
-    public function __construct(ContaoFramework $framework, EventDispatcherInterface $eventDispatcher)
-    {
-        $this->framework = $framework;
-        $this->eventDispatcher = $eventDispatcher;
-
-        parent::__construct();
-    }
+    protected $interval;
+    /**
+     * @var string $projectDir
+     */
+    protected $projectDir;
 
     public function getInterval(): string
     {
         return $this->interval;
     }
 
-    public function setInterval(string $interval): void
+    public function setInterval(?string $interval): void
     {
+        if (!\in_array($interval, static::INTERVALS, true)) {
+            throw new InvalidIntervalException(
+                $interval === null
+                    ? "No interval provided."
+                    : \sprintf(
+                        'Invalid interval "%s" provided. Should be one of: %s.',
+                        $interval,
+                        implode(', ', static::INTERVALS)
+                )
+            );
+        }
         $this->interval = $interval;
     }
 
-    /**
-     * @throws \Exception
-     *
-     * @return int|void
-     */
-    public function executeCleaner()
-    {
-        $arrOrder = StringUtil::deserialize(Config::get('cleanerOrder'), true);
-        $arrOptions = [];
-        $db = Database::getInstance();
+    public function __construct(
+        ContaoFramework          $framework,
+        EventDispatcherInterface $eventDispatcher,
+        string                   $projectDir,
+        ?string                  $name = null
+    ) {
+        $this->framework = $framework;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->projectDir = $projectDir;
 
-        if (\count($arrOrder) > 0) {
-            $arrOptions = [
-                'order' => 'FIELD(id,'.implode(',', $arrOrder).')',
-            ];
-        }
-
-        if (null !== ($objCleaners = System::getContainer()->get('huh.cleaner.registry.cleaner')->findBy([
-                'published=?',
-                'period=?',
-            ], [true, $this->interval], $arrOptions))) {
-            while ($objCleaners->next()) {
-                switch ($objCleaners->type) {
-                    case static::TYPE_ENTITY:
-                        if (!$objCleaners->whereCondition) {
-                            continue 2;
-                        }
-
-                        $strQuery = "SELECT id FROM $objCleaners->dataContainer WHERE ($objCleaners->whereCondition)";
-
-                        if ($objCleaners->addMaxAge) {
-                            $strQuery .= $this->getMaxAgeCondition($objCleaners->dataContainer,
-                                $objCleaners->maxAgeField, $objCleaners->maxAge);
-                        }
-
-                        $result = $db->execute(html_entity_decode($strQuery));
-                        $removedCount = 0;
-
-                        if (0 == $result->numRows) {
-                            continue 2;
-                        }
-
-                        foreach ($result->fetchEach('id') as $id) {
-                            $singleResult = $db->prepare("SELECT * FROM $objCleaners->dataContainer WHERE $objCleaners->dataContainer.id=?")
-                                ->limit(1)
-                                ->execute($id);
-
-                            if (0 == $singleResult->numRows) {
-                                continue;
-                            }
-
-                            if (!$this->cleanEntity($singleResult, $objCleaners)) {
-                                continue;
-                            }
-
-                            ++$removedCount;
-                        }
-
-                        $this->output->writeln("<fg=green>Cleanup table '".$objCleaners->dataContainer."', removed ".$removedCount
-                            .' entries ['.$objCleaners->title.'].</>');
-
-                        break;
-
-                    case static::TYPE_DEPENDENT_ENTITY:
-                        if (!$objCleaners->whereCondition) {
-                            continue 2;
-                        }
-
-                        $query = "SELECT * FROM $objCleaners->dependentTable WHERE $objCleaners->whereCondition";
-
-                        if ($objCleaners->addMaxAge) {
-                            $query .= static::getMaxAgeCondition($objCleaners->dependentTable,
-                                $objCleaners->maxAgeField, $objCleaners->maxAge);
-                        }
-
-                        $dependenceEntities = $db->execute(html_entity_decode($query));
-
-                        if (0 == $dependenceEntities->numRows) {
-                            continue 2;
-                        }
-
-                        $dependenceEntities = $dependenceEntities->fetchEach('id');
-                        $query = "SELECT * FROM $objCleaners->dataContainer WHERE $objCleaners->dataContainer.$objCleaners->dependentField IN (".implode(',',
-                                $dependenceEntities).')';
-
-                        $cleanEntities = $db->execute(html_entity_decode($query));
-
-                        if (0 == $cleanEntities->numRows) {
-                            continue 2;
-                        }
-
-                        while ($cleanEntities->next()) {
-                            static::cleanEntity($cleanEntities, $objCleaners);
-                        }
-
-                        break;
-
-                    case static::TYPE_FILE:
-                        switch ($objCleaners->fileDirRetrievalMode) {
-                            case static::FILEDIR_RETRIEVAL_MODE_DIRECTORY:
-                                $strPath = System::getContainer()->get('huh.utils.file')->getPathFromUuid($objCleaners->directory);
-
-                                $objFolder = new Folder($strPath);
-
-                                $objFolder->purge();
-
-                                if ($objCleaners->addGitKeepAfterClean) {
-                                    touch(TL_ROOT.'/'.$strPath.'/.gitkeep');
-                                }
-
-                                $this->output->writeln("<fg=green>Cleanup folder '".$strPath.' ['.$objCleaners->title.'].</>');
-
-                                break;
-
-                            case static::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS:
-                                if (!$objCleaners->whereCondition) {
-                                    continue 3;
-                                }
-
-                                $arrFields = StringUtil::deserialize($objCleaners->entityFields, true);
-
-                                if (empty($arrFields)) {
-                                    continue 3;
-                                }
-
-                                $strQuery = "SELECT * FROM $objCleaners->dataContainer WHERE ($objCleaners->whereCondition)";
-
-                                if ($objCleaners->addMaxAge) {
-                                    $strQuery .= $this->getMaxAgeCondition($objCleaners);
-                                }
-
-                                $objInstances = $db->execute(html_entity_decode($strQuery));
-
-                                if ($objInstances->numRows > 0) {
-                                    while ($objInstances->next()) {
-                                        foreach ($arrFields as $strField) {
-                                            if (!$objInstances->{$strField}) {
-                                                continue;
-                                            }
-
-                                            // deserialize if necessary
-                                            $varValue = StringUtil::deserialize($objInstances->{$strField});
-
-                                            if (!\is_array($varValue)) {
-                                                $varValue = [$varValue];
-                                            }
-
-                                            foreach ($varValue as $strFile) {
-                                                if (null === ($objFile = System::getContainer()->get('huh.utils.file')->getFileFromUuid($strFile))) {
-                                                    continue;
-                                                }
-
-                                                if (true === $objFile->delete()) {
-                                                    $this->output->writeln("<fg=green>Cleanup files, removed file '".$objFile->path.' ['
-                                                        .$objCleaners->title.'].</>');
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                break;
-                        }
-
-                        break;
-                }
-            }
-        }
-    }
-
-    /**
-     * @return string
-     */
-    public function getMaxAgeCondition(string $table, string $maxAgeField, string $maxAge)
-    {
-        $arrMaxAge = StringUtil::deserialize($maxAge, true);
-
-        $intFactor = 1;
-
-        switch ($arrMaxAge['unit']) {
-            case 'm':
-                $intFactor = 60;
-
-                break;
-
-            case 'h':
-                $intFactor = 60 * 60;
-
-                break;
-
-            case 'd':
-                $intFactor = 24 * 60 * 60;
-
-                break;
-        }
-
-        $intMaxInterval = $arrMaxAge['value'] * $intFactor;
-
-        return " AND (UNIX_TIMESTAMP() > $table.$maxAgeField + $intMaxInterval)";
+        parent::__construct($name);
     }
 
     /**
@@ -297,35 +122,306 @@ class CleanerCommand extends AbstractLockedCommand
      */
     protected function configure()
     {
-        $this->addOption('interval', 'i', InputOption::VALUE_REQUIRED, 'Provide the interval.', 'daily');
-
-        $this->setName('cleaner:execute')->setDescription(
-            'Trigger the cleaner, and remove no longer required files and database entries.'
-        );
-        parent::configure();
+        $this->setName('cleaner:execute')
+            ->setDescription('Trigger the cleaner, and remove no longer required files and database entries.')
+            ->addOption(
+                'interval',
+                'i',
+                InputOption::VALUE_REQUIRED,
+                \sprintf('Provide an interval: %s.', implode(', ', static::INTERVALS))
+            )
+        ;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function executeLocked(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->framework->initialize();
+
         $this->io = new SymfonyStyle($input, $output);
         $this->input = $input;
         $this->output = $output;
 
-        $this->setInterval($input->getOption('interval'));
-
-        $this->rootDir = $this->getContainer()->getParameter('kernel.project_dir');
-
-        try {
-            $this->executeCleaner();
-        } catch (\Exception $e) {
-            $this->output->writeln('<fg=red>'.$e->getMessage().'</>');
+        try
+        {
+            $this->setInterval($input->getOption('interval'));
+            $this->clean();
+        }
+        catch (InvalidIntervalException $e)
+        {
+            $this->io->error($e->getMessage());
+            return Command::FAILURE;
+        }
+        catch (\Throwable $e)
+        {
+            $this->io->error($e->getMessage());
+            $this->io->getErrorStyle()->block($e->getTraceAsString());
+            return Command::FAILURE;
         }
 
-        return 0;
+        return Command::SUCCESS;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function clean(): void
+    {
+        $arrOrder = StringUtil::deserialize(Config::get('cleanerOrder'), true);
+        $arrOptions = [];
+
+        if (\count($arrOrder) > 0) {
+            $arrOptions = [
+                'order' => 'FIELD(id,'.implode(',', $arrOrder).')',
+            ];
+        }
+
+        $cleaners = CleanerModel::findBy(['published=?', 'period=?'], [true, $this->interval], $arrOptions);
+
+        if ($cleaners === null) {
+            return;
+        }
+
+        while ($cleaners->next()) {
+            $this->executeCleaner($cleaners->current());
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function executeCleaner(CleanerModel $cleaner)
+    {
+        switch ($cleaner->type)
+        {
+            case static::TYPE_ENTITY:
+                $this->handleEntityType($cleaner);
+                break;
+
+            case static::TYPE_DEPENDENT_ENTITY:
+                $this->handleDependentEntityType($cleaner);
+                break;
+
+            case static::TYPE_FILE:
+                $this->handleFileType($cleaner);
+                break;
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function handleFileType(CleanerModel $cleaner)
+    {
+        switch ($cleaner->fileDirRetrievalMode)
+        {
+            case static::FILEDIR_RETRIEVAL_MODE_DIRECTORY:
+                $this->handleFileTypeRetrieveDirectory($cleaner);
+                return;
+
+            case static::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS:
+                $this->handleFileTypeRetrieveEntityFields($cleaner);
+                return;
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function handleFileTypeRetrieveDirectory(CleanerModel $cleaner): void
+    {
+        $strPath = System::getContainer()->get('huh.utils.file')->getPathFromUuid($cleaner->directory);
+
+        $objFolder = new Folder($strPath);
+
+        $objFolder->purge();
+
+        if ($cleaner->addGitKeepAfterClean) {
+            \touch(TL_ROOT.'/'.$strPath.'/.gitkeep');
+        }
+
+        $this->output->writeln("<fg=green>Cleanup folder '".$strPath.' ['.$cleaner->title.'].</>');
+    }
+
+    protected function handleFileTypeRetrieveEntityFields(CleanerModel $cleaner): void
+    {
+        if (!$cleaner->whereCondition) {
+            return;
+        }
+
+        $arrFields = StringUtil::deserialize($cleaner->entityFields, true);
+
+        if (empty($arrFields)) {
+            return;
+        }
+
+        $strQuery = "SELECT * FROM $cleaner->dataContainer WHERE ($cleaner->whereCondition)";
+
+        if ($cleaner->addMaxAge)
+        {
+            $strQuery .= $this->getMaxAgeCondition(
+                $cleaner->dataContainer,
+                $cleaner->maxAgeField,
+                $cleaner->maxAge
+            );
+        }
+
+        $db = Database::getInstance();
+
+        $result = $db->execute(html_entity_decode($strQuery));
+
+        if ($result->numRows < 1) {
+            return;
+        }
+
+        while ($result->next())
+        {
+            foreach ($arrFields as $strField)
+            {
+                if (!$result->{$strField}) {
+                    continue;
+                }
+
+                // deserialize if necessary
+                $value = StringUtil::deserialize($result->{$strField});
+
+                if (!\is_array($value)) {
+                    $value = [$value];
+                }
+
+                foreach ($value as $fileUuid)
+                {
+                    $file = System::getContainer()->get('huh.utils.file')->getFileFromUuid($fileUuid);
+                    if (null === $file) {
+                        continue;
+                    }
+
+                    if ($file->delete() !== true) {
+                        continue;
+                    }
+
+                    $this->output->writeln(\sprintf(
+                        "<fg=green>Cleanup files, removed file '%s' [%s].</>",
+                        $file->path,
+                        $cleaner->title
+                    ));
+                }
+            }
+        }
+    }
+
+    protected function handleDependentEntityType(CleanerModel $cleaner)
+    {
+        if (!$cleaner->whereCondition) {
+            return;
+        }
+
+        $query = "SELECT * FROM $cleaner->dependentTable WHERE $cleaner->whereCondition";
+
+        if ($cleaner->addMaxAge) {
+            $query .= static::getMaxAgeCondition($cleaner->dependentTable,
+                $cleaner->maxAgeField, $cleaner->maxAge);
+        }
+
+        $db = Database::getInstance();
+
+        $dependenceEntities = $db->execute(html_entity_decode($query));
+
+        if (0 == $dependenceEntities->numRows) {
+            return;
+        }
+
+        $dependenceEntities = $dependenceEntities->fetchEach('id');
+        $inEntities = implode(',', $dependenceEntities);
+        $query = "SELECT * FROM $cleaner->dataContainer WHERE $cleaner->dataContainer.$cleaner->dependentField IN ($inEntities)";
+
+        $cleanEntities = $db->execute(html_entity_decode($query));
+
+        if (0 == $cleanEntities->numRows) {
+            return;
+        }
+
+        while ($cleanEntities->next()) {
+            static::cleanEntity($cleanEntities, $cleaner);
+        }
+    }
+
+    protected function handleEntityType(CleanerModel $cleaner)
+    {
+        if (!$cleaner->whereCondition) {
+            return;
+        }
+
+        $strQuery = "SELECT id FROM $cleaner->dataContainer WHERE ($cleaner->whereCondition)";
+
+        if ($cleaner->addMaxAge) {
+            $strQuery .= $this->getMaxAgeCondition($cleaner->dataContainer,
+                $cleaner->maxAgeField, $cleaner->maxAge);
+        }
+
+        $db = Database::getInstance();
+
+        $result = $db->execute(html_entity_decode($strQuery));
+        $removedCount = 0;
+
+        if (0 == $result->numRows) {
+            return;
+        }
+
+        foreach ($result->fetchEach('id') as $id)
+        {
+            $singleResult = $db->prepare("SELECT * FROM $cleaner->dataContainer WHERE $cleaner->dataContainer.id=?")
+                ->limit(1)
+                ->execute($id);
+
+            if (0 == $singleResult->numRows) {
+                continue;
+            }
+
+            if (!$this->cleanEntity($singleResult, $cleaner)) {
+                continue;
+            }
+
+            ++$removedCount;
+        }
+
+        $this->output->writeln(\sprintf(
+            "<fg=green>Cleanup table '%s', removed %s entries [%s].</>",
+            $cleaner->dataContainer,
+            $removedCount,
+            $cleaner->title
+        ));
+    }
+
+    /**
+     * @param string $table
+     * @param string $maxAgeField
+     * @param string $maxAge
+     * @return string
+     */
+    public function getMaxAgeCondition(string $table, string $maxAgeField, string $maxAge): string
+    {
+        $arrMaxAge = StringUtil::deserialize($maxAge, true);
+
+        $intFactor = 1;
+
+        switch ($arrMaxAge['unit'])
+        {
+            case 'm':
+                $intFactor = 60;
+                break;
+
+            case 'h':
+                $intFactor = 60 * 60;
+                break;
+
+            case 'd':
+                $intFactor = 24 * 60 * 60;
+                break;
+        }
+
+        $intMaxInterval = $arrMaxAge['value'] * $intFactor;
+
+        return " AND (UNIX_TIMESTAMP() > $table.$maxAgeField + $intMaxInterval)";
     }
 
     /**
@@ -336,13 +432,16 @@ class CleanerCommand extends AbstractLockedCommand
      *
      * @return bool
      */
-    protected function cleanEntity($entity, $cleaner)
+    protected function cleanEntity($entity, $cleaner): bool
     {
         $data = $entity->row();
         $data['table'] = $cleaner->dataContainer;
 
         /** @var BeforeCleanEvent $event */
-        $event = $this->eventDispatcher->dispatch(new BeforeCleanEvent($data, $cleaner->current(), false), BeforeCleanEvent::NAME);
+        $event = $this->eventDispatcher->dispatch(
+            new BeforeCleanEvent($data, $cleaner->current(), false),
+            BeforeCleanEvent::NAME
+        );
 
         if ($event->isSkipped()) {
             return false;
@@ -352,31 +451,35 @@ class CleanerCommand extends AbstractLockedCommand
             $this->applyOnDeleteCallback($entity, $cleaner);
         }
 
-        $deleteResult = Database::getInstance()->prepare("DELETE FROM $cleaner->dataContainer WHERE $cleaner->dataContainer.id=?")->execute($entity->id);
+        $deleteResult = Database::getInstance()
+            ->prepare("DELETE FROM $cleaner->dataContainer WHERE $cleaner->dataContainer.id=?")
+            ->execute($entity->id);
 
-        if ($deleteResult->affectedRows > 0) {
-            if ($cleaner->addPrivacyProtocolEntry) {
-                $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
-
-                if ($cleaner->privacyProtocolEntryDescription) {
-                    $data['description'] = $cleaner->privacyProtocolEntryDescription;
-                }
-
-                $protocolManager->addEntry(
-                    $cleaner->privacyProtocolEntryType,
-                    $cleaner->privacyProtocolEntryArchive,
-                    $data,
-                    'heimrichhannot/contao-cleaner-bundle'
-                );
-            }
-
-            /* @var AfterCleanEvent $event */
-            $this->eventDispatcher->dispatch(new AfterCleanEvent($data, $cleaner->current()), AfterCleanEvent::NAME);
-
-            return true;
+        if ($deleteResult->affectedRows < 1) {
+            return false;
         }
 
-        return false;
+        if ($cleaner->addPrivacyProtocolEntry
+            && \class_exists(\HeimrichHannot\Privacy\Manager\ProtocolManager::class))
+        {
+            $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
+
+            if ($cleaner->privacyProtocolEntryDescription) {
+                $data['description'] = $cleaner->privacyProtocolEntryDescription;
+            }
+
+            $protocolManager->addEntry(
+                $cleaner->privacyProtocolEntryType,
+                $cleaner->privacyProtocolEntryArchive,
+                $data,
+                'heimrichhannot/contao-cleaner-bundle'
+            );
+        }
+
+        /* @var AfterCleanEvent $event */
+        $this->eventDispatcher->dispatch(new AfterCleanEvent($data, $cleaner->current()), AfterCleanEvent::NAME);
+
+        return true;
     }
 
     /**
@@ -387,17 +490,23 @@ class CleanerCommand extends AbstractLockedCommand
     {
         Controller::loadDataContainer($cleaner->dataContainer);
 
-        if (\is_array($GLOBALS['TL_DCA'][$cleaner->dataContainer]['config']['ondelete_callback'])) {
-            $dc = new DC_Table_Utils($cleaner->dataContainer);
-            $dc->activeRecord = $entity->row();
-            $dc->id = $entity->id;
+        if (!\is_array($GLOBALS['TL_DCA'][$cleaner->dataContainer]['config']['ondelete_callback'])) {
+            return;
+        }
 
-            foreach ($GLOBALS['TL_DCA'][$cleaner->dataContainer]['config']['ondelete_callback'] as $callback) {
-                if (\is_array($callback)) {
-                    Controller::importStatic($callback[0])->{$callback[1]}($dc, 0);
-                } elseif (\is_callable($callback)) {
-                    $callback($dc, 0);
-                }
+        $dc = new DC_Table_Utils($cleaner->dataContainer);
+        $dc->activeRecord = $entity->row();
+        $dc->id = $entity->id;
+
+        foreach ($GLOBALS['TL_DCA'][$cleaner->dataContainer]['config']['ondelete_callback'] as $callback)
+        {
+            if (\is_array($callback))
+            {
+                Controller::importStatic($callback[0])->{$callback[1]}($dc, 0);
+            }
+            elseif (\is_callable($callback))
+            {
+                $callback($dc, 0);
             }
         }
     }

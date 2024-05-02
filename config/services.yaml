@@ -1,0 +1,21 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  HeimrichHannot\CleanerBundle\:
+    resource: '../src/{Command,Cron,DataContainer,Event,Model,Registry}'
+
+  HeimrichHannot\CleanerBundle\Registry\CleanerRegistry:
+    class: HeimrichHannot\CleanerBundle\Registry\CleanerRegistry
+    public: true
+
+  HeimrichHannot\CleanerBundle\Cron\CleanerCron:
+    class: HeimrichHannot\CleanerBundle\Cron\CleanerCron
+    public: true
+
+  HeimrichHannot\CleanerBundle\Command\CleanerCommand:
+    class: HeimrichHannot\CleanerBundle\Command\CleanerCommand
+    public: true
+    bind:
+      $projectDir: '%kernel.project_dir%'

@@ -6,6 +6,9 @@
  * @license LGPL-3.0-or-later
  */
 
+use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
+use HeimrichHannot\CleanerBundle\DataContainer\CleanerContainer;
+
 $GLOBALS['TL_DCA']['tl_cleaner'] = [
     'config' => [
         'dataContainer' => 'Table',
@@ -72,16 +75,16 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
     'palettes' => [
         '__selector__' => ['type', 'fileDirRetrievalMode', 'addMaxAge'],
         'default' => '{general_legend},type;',
-        \HeimrichHannot\CleanerBundle\Command\CleanerCommand::TYPE_ENTITY => '{general_legend},type,title,description;{config_legend},dataContainer,period,whereCondition,addMaxAge,useEntityOnDeleteCallback;{publish_legend},published;',
-        \HeimrichHannot\CleanerBundle\Command\CleanerCommand::TYPE_DEPENDENT_ENTITY => '{general_legend},type,title,description;{config_legend},dependentTable,whereCondition,dataContainer,dependentField,period,addMaxAge,useEntityOnDeleteCallback;{publish_legend},published;',
-        \HeimrichHannot\CleanerBundle\Command\CleanerCommand::TYPE_FILE => '{general_legend},type,title,description;{config_legend},period,fileDirRetrievalMode;{publish_legend},published;',
+        CleanerCommand::TYPE_ENTITY => '{general_legend},type,title,description;{config_legend},dataContainer,period,whereCondition,addMaxAge,useEntityOnDeleteCallback;{publish_legend},published;',
+        CleanerCommand::TYPE_DEPENDENT_ENTITY => '{general_legend},type,title,description;{config_legend},dependentTable,whereCondition,dataContainer,dependentField,period,addMaxAge,useEntityOnDeleteCallback;{publish_legend},published;',
+        CleanerCommand::TYPE_FILE => '{general_legend},type,title,description;{config_legend},period,fileDirRetrievalMode;{publish_legend},published;',
     ],
     'subpalettes' => [
         'addMaxAge' => 'maxAge,maxAgeField',
         'fileDirRetrievalMode_'
-        .\HeimrichHannot\CleanerBundle\Command\CleanerCommand::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS => 'dataContainer,entityFields,whereCondition,addMaxAge',
+        . CleanerCommand::FILEDIR_RETRIEVAL_MODE_ENTITY_FIELDS => 'dataContainer,entityFields,whereCondition,addMaxAge',
         'fileDirRetrievalMode_'
-        .\HeimrichHannot\CleanerBundle\Command\CleanerCommand::FILEDIR_RETRIEVAL_MODE_DIRECTORY => 'directory,addGitKeepAfterClean',
+        . CleanerCommand::FILEDIR_RETRIEVAL_MODE_DIRECTORY => 'directory,addGitKeepAfterClean',
     ],
     'fields' => [
         'id' => [
@@ -103,7 +106,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'exclude' => true,
             'filter' => true,
             'inputType' => 'select',
-            'options' => \HeimrichHannot\CleanerBundle\Command\CleanerCommand::TYPES,
+            'options' => CleanerCommand::TYPES,
             'reference' => &$GLOBALS['TL_LANG']['tl_cleaner']['reference'],
             'eval' => ['tl_class' => 'w50', 'mandatory' => true, 'submitOnChange' => true, 'includeBlankOption' => true],
             'sql' => "varchar(64) NOT NULL default ''",
@@ -138,7 +141,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'inputType' => 'select',
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['dataContainer'],
             'options_callback' => [
-                \HeimrichHannot\CleanerBundle\DataContainer\CleanerContainer::class,
+                CleanerContainer::class,
                 'onDataContainerOptionsCallback',
             ],
             'eval' => [
@@ -198,7 +201,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'exclude' => true,
             'filter' => true,
             'inputType' => 'select',
-            'options' => \HeimrichHannot\CleanerBundle\Command\CleanerCommand::FILEDIR_RETRIEVAL_MODES,
+            'options' => CleanerCommand::FILEDIR_RETRIEVAL_MODES,
             'reference' => &$GLOBALS['TL_LANG']['tl_cleaner']['reference'],
             'eval' => ['tl_class' => 'w50', 'submitOnChange' => true, 'mandatory' => true, 'includeBlankOption' => true],
             'sql' => "varchar(64) NOT NULL default ''",
@@ -257,7 +260,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
 ];
 
 if (System::getContainer()->get('huh.utils.container')->isBundleActive('privacy') ||
-    class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle')) {
+    \class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle')) {
     $dca = &$GLOBALS['TL_DCA']['tl_cleaner'];
     $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
 
@@ -305,7 +308,7 @@ class tl_cleaner extends \Backend
             $icon = 'invisible.gif';
         }
 
-        return '<a href="'.$this->addToUrl($href).'" title="'.specialchars($title).'"'.$attributes.'>'.Image::getHtml($icon, $label)
+        return '<a href="'.$this->addToUrl($href).'" title="'.\Contao\StringUtil::specialchars($title).'"'.$attributes.'>'.Image::getHtml($icon, $label)
                .'</a> ';
     }
 
