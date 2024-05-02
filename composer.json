@@ -21,9 +21,9 @@
     }
   ],
   "require": {
-    "php": "^7.1|^8.0",
+    "php": "^7.4 || ^8.0",
     "contao/core-bundle": "^4.9",
-    "heimrichhannot/contao-utils-bundle": "^2.124",
+    "heimrichhannot/contao-utils-bundle": "^2.124 || ^3.4",
     "symfony/event-dispatcher-contracts": "^1.0 || ^2.0 || ^3.0"
   },
   "require-dev": {
@@ -45,16 +45,7 @@
   "autoload": {
     "psr-4": {
       "HeimrichHannot\\CleanerBundle\\": "src/"
-    },
-    "classmap": [
-      "src/"
-    ],
-    "exclude-from-classmap": [
-      "src/Resources/contao/config/",
-      "src/Resources/contao/dca/",
-      "src/Resources/contao/languages/",
-      "src/Resources/contao/templates/"
-    ]
+    }
   },
   "autoload-dev": {
     "psr-4": {

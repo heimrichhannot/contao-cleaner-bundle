@@ -502,7 +502,7 @@ class CleanerCommand extends Command
         {
             if (\is_array($callback))
             {
-                Controller::importStatic($callback[0])->{$callback[1]}($dc, 0);
+                System::importStatic($callback[0])->{$callback[1]}($dc, 0);
             }
             elseif (\is_callable($callback))
             {

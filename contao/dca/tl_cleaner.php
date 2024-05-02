@@ -63,7 +63,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
                 'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['toggle'],
                 'icon' => 'visible.gif',
                 'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
-                'button_callback' => ['tl_cleaner', 'toggleIcon'],
+                'button_callback' => [CleanerContainer::class, 'toggleIcon'],
             ],
             'show' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['show'],
@@ -140,10 +140,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dataContainer' => [
             'inputType' => 'select',
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['dataContainer'],
-            'options_callback' => [
-                CleanerContainer::class,
-                'onDataContainerOptionsCallback',
-            ],
+            'options_callback' => [CleanerContainer::class, 'getTables'],
             'eval' => [
                 'chosen' => true,
                 'includeBlankOption' => true,
@@ -210,7 +207,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['entityFields'],
             'exclude' => true,
             'inputType' => 'select',
-            'options_callback' => ['HeimrichHannot\CleanerBundle\Backend\Cleaner', 'getFieldsAsOptions'],
+            'options_callback' => [CleanerContainer::class, 'getFieldsAsOptions'],
             'eval' => ['tl_class' => 'long clr', 'mandatory' => true, 'multiple' => true, 'chosen' => true, 'style' => 'width: 97%'],
             'sql' => 'blob NULL',
         ],
@@ -231,7 +228,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dependentTable' => [
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['dependentTable'],
             'inputType' => 'select',
-            'options_callback' => ['HeimrichHannot\CleanerBundle\Backend\Cleaner', 'getTables'],
+            'options_callback' => [CleanerContainer::class, 'getTables'],
             'eval' => [
                 'submitOnChange' => true,
                 'includeBlankOption' => true,
@@ -244,7 +241,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dependentField' => [
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['dependentField'],
             'inputType' => 'select',
-            'options_callback' => ['HeimrichHannot\CleanerBundle\Backend\Cleaner', 'getFieldsAsOptions'],
+            'options_callback' => [CleanerContainer::class, 'getFieldsAsOptions'],
             'exclude' => true,
             'eval' => ['includeBlankOption' => true, 'tl_class' => 'w50 ', 'mandatory' => true],
             'sql' => "varchar(64) NOT NULL default ''",
@@ -259,8 +256,9 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
     ],
 ];
 
-if (System::getContainer()->get('huh.utils.container')->isBundleActive('privacy') ||
-    \class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle')) {
+if (\in_array('privacy', \array_keys(System::getContainer()->getParameter('kernel.bundles')))
+    && \class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle'))
+{
     $dca = &$GLOBALS['TL_DCA']['tl_cleaner'];
     $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
 
@@ -277,68 +275,12 @@ if (System::getContainer()->get('huh.utils.container')->isBundleActive('privacy'
     $dca['subpalettes']['addPrivacyProtocolEntry'] = 'privacyProtocolEntryArchive,privacyProtocolEntryType,privacyProtocolEntryDescription';
 
     // add to palettes
-    foreach ($dca['palettes'] as $palette => &$fields) {
+    foreach ($dca['palettes'] as $palette => &$fields)
+    {
         if (in_array($palette, ['__selector__', 'default'])) {
             continue;
         }
 
         $fields = str_replace(';{publish_legend', ',addPrivacyProtocolEntry;{publish_legend', $fields);
-    }
-}
-
-class tl_cleaner extends \Backend
-{
-    public function toggleIcon($row, $href, $label, $title, $icon, $attributes)
-    {
-        $objUser = \BackendUser::getInstance();
-
-        if (strlen(Input::get('tid'))) {
-            $this->toggleVisibility(Input::get('tid'), ('1' === Input::get('state')));
-            \Controller::redirect($this->getReferer());
-        }
-
-        // Check permissions AFTER checking the tid, so hacking attempts are logged
-        if (!$objUser->isAdmin && !$objUser->hasAccess('tl_cleaner::published', 'alexf')) {
-            return '';
-        }
-
-        $href .= '&amp;tid='.$row['id'].'&amp;state='.($row['published'] ? '' : 1);
-
-        if (!$row['published']) {
-            $icon = 'invisible.gif';
-        }
-
-        return '<a href="'.$this->addToUrl($href).'" title="'.\Contao\StringUtil::specialchars($title).'"'.$attributes.'>'.Image::getHtml($icon, $label)
-               .'</a> ';
-    }
-
-    public function toggleVisibility($intId, $blnVisible)
-    {
-        $objUser = \BackendUser::getInstance();
-        $objDatabase = \Database::getInstance();
-
-        // Check permissions to publish
-        if (!$objUser->isAdmin && !$objUser->hasAccess('tl_cleaner::published', 'alexf')) {
-            \Controller::log('Not enough permissions to publish/unpublish item ID "'.$intId.'"', 'tl_cleaner toggleVisibility', TL_ERROR);
-            \Controller::redirect('contao/main.php?act=error');
-        }
-
-        $objVersions = new Versions('tl_cleaner', $intId);
-        $objVersions->initialize();
-
-        // Trigger the save_callback
-        if (is_array($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback'])) {
-            foreach ($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback'] as $callback) {
-                $this->import($callback[0]);
-                $blnVisible = $this->{$callback[0]}->{$callback[1]}($blnVisible, $this);
-            }
-        }
-
-        // Update the database
-        $objDatabase->prepare('UPDATE tl_cleaner SET tstamp='.time().", published='".($blnVisible ? 1 : '')."' WHERE id=?")->execute($intId);
-
-        $objVersions->create();
-        \Controller::log('A new version of record "tl_cleaner.id='.$intId.'" has been created'.$this->getParentEntries('tl_cleaner', $intId),
-            'tl_cleaner toggleVisibility()', TL_GENERAL);
     }
 }
