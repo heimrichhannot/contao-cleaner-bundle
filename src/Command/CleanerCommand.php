@@ -485,7 +485,7 @@ class CleanerCommand extends Command
     {
         Controller::loadDataContainer($cleaner->dataContainer);
 
-        if (!\is_array($GLOBALS['TL_DCA'][$cleaner->dataContainer]['config']['ondelete_callback'])) {
+        if (!\is_array($GLOBALS['TL_DCA'][$cleaner->dataContainer]['config']['ondelete_callback'] ?? null)) {
             return;
         }
 
