@@ -63,7 +63,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
                 'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['toggle'],
                 'icon' => 'visible.gif',
                 'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
-                'button_callback' => [CleanerContainer::class, 'toggleIcon'],
+                // 'button_callback' => [CleanerContainer::class, 'toggleIcon'],
             ],
             'show' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['show'],
@@ -140,7 +140,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dataContainer' => [
             'inputType' => 'select',
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['dataContainer'],
-            'options_callback' => [CleanerContainer::class, 'getTables'],
+            // 'options_callback' => [CleanerContainer::class, 'getTables'],
             'eval' => [
                 'chosen' => true,
                 'includeBlankOption' => true,
@@ -207,7 +207,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['entityFields'],
             'exclude' => true,
             'inputType' => 'select',
-            'options_callback' => [CleanerContainer::class, 'getFieldsAsOptions'],
+            // 'options_callback' => [CleanerContainer::class, 'getFieldsAsOptions'],
             'eval' => ['tl_class' => 'long clr', 'mandatory' => true, 'multiple' => true, 'chosen' => true, 'style' => 'width: 97%'],
             'sql' => 'blob NULL',
         ],
@@ -228,7 +228,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dependentTable' => [
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['dependentTable'],
             'inputType' => 'select',
-            'options_callback' => [CleanerContainer::class, 'getTables'],
+            // 'options_callback' => [CleanerContainer::class, 'getTables'],
             'eval' => [
                 'submitOnChange' => true,
                 'includeBlankOption' => true,
@@ -241,7 +241,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         'dependentField' => [
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['dependentField'],
             'inputType' => 'select',
-            'options_callback' => [CleanerContainer::class, 'getFieldsAsOptions'],
+            // 'options_callback' => [CleanerContainer::class, 'getFieldsAsOptions'],
             'exclude' => true,
             'eval' => ['includeBlankOption' => true, 'tl_class' => 'w50 ', 'mandatory' => true],
             'sql' => "varchar(64) NOT NULL default ''",

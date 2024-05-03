@@ -11,6 +11,7 @@ namespace HeimrichHannot\CleanerBundle\DataContainer;
 use Contao\Backend;
 use Contao\BackendUser;
 use Contao\Controller;
+use Contao\CoreBundle\ServiceAnnotation\Callback;
 use Contao\Database;
 use Contao\DataContainer;
 use Contao\Image;
@@ -19,7 +20,6 @@ use Contao\StringUtil;
 use Contao\System;
 use Contao\Versions;
 use HeimrichHannot\UtilsBundle\Util\Utils;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class CleanerContainer
 {
@@ -35,11 +35,19 @@ class CleanerContainer
         $this->utils = $utils;
     }
 
+    /**
+     * @Callback(table="tl_cleaner", target="fields.dataContainer.options")
+     * @Callback(table="tl_cleaner", target="fields.dependentTable.options")
+     */
     public function getTables(?DataContainer $dc = null): array
     {
         return Database::getInstance()->listTables();
     }
 
+    /**
+     * @Callback(table="tl_cleaner", target="fields.entityFields.options")
+     * @Callback(table="tl_cleaner", target="fields.dependentField.options")
+     */
     public function getFieldsAsOptions(DataContainer $dc): array
     {
         if (!$dc->activeRecord->dataContainer) {
@@ -49,6 +57,9 @@ class CleanerContainer
         return $this->utils->dca()->getDcaFields($dc->activeRecord->dataContainer);
     }
 
+    /**
+     * @Callback(table="tl_cleaner", target="list.operations.toggle.button")
+     */
     public function toggleIcon($row, $href, $label, $title, $icon, $attributes): string
     {
         $objUser = BackendUser::getInstance();
