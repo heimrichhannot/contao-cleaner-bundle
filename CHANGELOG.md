@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2024-05-03
+- Changed: minimum php version is now 7.4
+- Changed: major refactoring
+- Changed: wording from max age to min age, which is more intuitive
+- Changed: Poor Man's Cron now runs as an annotated cron job
+- Removed: service tags and parameters
+
 ## [2.7.0] - 2022-05-10
 - Changed: minimum contao version is now 4.9
 - Fixed: symfony 5 compatibility
