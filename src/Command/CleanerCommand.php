@@ -12,6 +12,7 @@ use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\Database;
+use Contao\File;
 use Contao\Folder;
 use Contao\StringUtil;
 use Contao\System;
@@ -20,6 +21,7 @@ use HeimrichHannot\CleanerBundle\Event\BeforeCleanEvent;
 use HeimrichHannot\CleanerBundle\Exception\InvalidIntervalException;
 use HeimrichHannot\CleanerBundle\Model\CleanerModel;
 use HeimrichHannot\UtilsBundle\Driver\DC_Table_Utils;
+use HeimrichHannot\UtilsBundle\Util\Utils;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -58,30 +60,15 @@ class CleanerCommand extends Command
         self::INTERVAL_WEEKLY
     ];
 
-    /**
-     * @var SymfonyStyle
-     */
-    protected $io;
-    /**
-     * @var InputInterface
-     */
-    protected $input;
-    /**
-     * @var OutputInterface
-     */
-    protected $output;
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $eventDispatcher;
-    /**
-     * @var string
-     */
-    protected $interval;
-    /**
-     * @var string $projectDir
-     */
-    protected $projectDir;
+    protected ContaoFramework $framework;
+    protected EventDispatcherInterface $eventDispatcher;
+    protected Utils $utils;
+    protected string $projectDir;
+
+    protected InputInterface $input;
+    protected OutputInterface $output;
+    protected SymfonyStyle $io;
+    protected string $interval;
 
     public function getInterval(): string
     {
@@ -107,11 +94,13 @@ class CleanerCommand extends Command
     public function __construct(
         ContaoFramework          $framework,
         EventDispatcherInterface $eventDispatcher,
+        Utils                    $utils,
         string                   $projectDir,
         ?string                  $name = null
     ) {
         $this->framework = $framework;
         $this->eventDispatcher = $eventDispatcher;
+        $this->utils = $utils;
         $this->projectDir = $projectDir;
 
         parent::__construct($name);
@@ -143,7 +132,9 @@ class CleanerCommand extends Command
 
         try
         {
-            $this->setInterval($input->getOption('interval'));
+            $interval = $input->getOption('interval');
+            $this->setInterval($interval);
+
             $this->clean();
         }
         catch (InvalidIntervalException $e)
@@ -166,16 +157,14 @@ class CleanerCommand extends Command
      */
     protected function clean(): void
     {
-        $arrOrder = StringUtil::deserialize(Config::get('cleanerOrder'), true);
-        $arrOptions = [];
+        $order = StringUtil::deserialize(Config::get('cleanerOrder'), true);
+        $options = [];
 
-        if (\count($arrOrder) > 0) {
-            $arrOptions = [
-                'order' => 'FIELD(id,'.implode(',', $arrOrder).')',
-            ];
+        if (\count($order) > 0) {
+            $options = ['order' => \sprintf('FIELD(id,%s)', \implode(',', $order))];
         }
 
-        $cleaners = CleanerModel::findBy(['published=?', 'period=?'], [true, $this->interval], $arrOptions);
+        $cleaners = CleanerModel::findBy(['published=?', 'period=?'], [true, $this->interval], $options);
 
         if ($cleaners === null) {
             return;
@@ -229,7 +218,7 @@ class CleanerCommand extends Command
      */
     protected function handleFileTypeRetrieveDirectory(CleanerModel $cleaner): void
     {
-        $strPath = System::getContainer()->get('huh.utils.file')->getPathFromUuid($cleaner->directory);
+        $strPath = $this->utils->file()->getPathFromUuid($cleaner->directory);
 
         $objFolder = new Folder($strPath);
 
@@ -290,8 +279,14 @@ class CleanerCommand extends Command
 
                 foreach ($value as $fileUuid)
                 {
-                    $file = System::getContainer()->get('huh.utils.file')->getFileFromUuid($fileUuid);
-                    if (null === $file) {
+                    $filePath = $this->utils->file()->getPathFromUuid($fileUuid);
+                    if (null === $filePath) {
+                        continue;
+                    }
+
+                    try {
+                        $file = new File($filePath);
+                    } catch (\Exception $e) {
                         continue;
                     }
 
