@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.2] - 2024-08-13
+- Added: time units weeks, months, years for maxAge (actually min age)
+
 ## [3.0.0] - 2024-05-03
 - Changed: minimum php version is now 7.4
 - Changed: major refactoring
