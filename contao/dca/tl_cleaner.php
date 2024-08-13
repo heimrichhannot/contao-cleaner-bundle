@@ -162,7 +162,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['maxAge'],
             'exclude' => true,
             'inputType' => 'timePeriod',
-            'options' => ['m', 'h', 'd'],
+            'options' => ['m', 'h', 'd', 'w', 'M', 'y'],
             'reference' => &$GLOBALS['TL_LANG']['tl_cleaner']['maxAge'],
             'eval' => ['mandatory' => true, 'tl_class' => 'w50 clr'],
             'sql' => 'blob NULL',

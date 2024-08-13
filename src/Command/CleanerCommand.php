@@ -50,8 +50,8 @@ class CleanerCommand extends Command
     const INTERVAL_MINUTELY = 'minutely';
     const INTERVAL_HOURLY = 'hourly';
     const INTERVAL_DAILY = 'daily';
-    const INTERVAL_MONTHLY = 'monthly';
     const INTERVAL_WEEKLY = 'weekly';
+    const INTERVAL_MONTHLY = 'monthly';
     const INTERVALS = [
         self::INTERVAL_MINUTELY,
         self::INTERVAL_HOURLY,
@@ -411,6 +411,18 @@ class CleanerCommand extends Command
 
             case 'd':
                 $intFactor = 24 * 60 * 60;
+                break;
+
+            case 'w':
+                $intFactor = 7 * 24 * 60 * 60;
+                break;
+
+            case 'M':
+                $intFactor = 30 * 24 * 60 * 60;
+                break;
+
+            case 'Y':
+                $intFactor = 365 * 24 * 60 * 60;
                 break;
         }
 
