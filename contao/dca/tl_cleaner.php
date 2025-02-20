@@ -7,23 +7,14 @@
  */
 
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
+use HeimrichHannot\UtilsBundle\Dca\DateAddedField;
+
+DateAddedField::register('tl_cleaner');
 
 $GLOBALS['TL_DCA']['tl_cleaner'] = [
     'config' => [
         'dataContainer' => \Contao\DC_Table::class,
         'enableVersioning' => true,
-        'onsubmit_callback' => [
-            function (\Contao\DataContainer $dc) {
-                $modelUtil = \Contao\System::getContainer()->get(\HeimrichHannot\UtilsBundle\Util\Utils::class)->model();
-
-                if (null === $dc || null === ($model = $modelUtil->findModelInstanceByPk($dc->table, $dc->id)) || $model->dateAdded > 0) {
-                    return null;
-                }
-
-                \Contao\System::getContainer()->get('contao.framework')->createInstance(\Contao\Database::class)
-                    ->prepare("UPDATE $dc->table SET dateAdded=? WHERE id=? AND dateAdded = 0")->execute(time(), $dc->id);
-            }
-        ],
         'sql' => [
             'keys' => [
                 'id' => 'primary',
@@ -285,5 +276,3 @@ if (\in_array('privacy', \array_keys(\Contao\System::getContainer()->getParamete
         $fields = str_replace(';{publish_legend', ',addPrivacyProtocolEntry;{publish_legend', $fields);
     }
 }
-
-\HeimrichHannot\UtilsBundle\Dca\DateAddedField::register('tl_cleaner');
