@@ -7,14 +7,22 @@
  */
 
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
-use HeimrichHannot\CleanerBundle\DataContainer\CleanerContainer;
 
 $GLOBALS['TL_DCA']['tl_cleaner'] = [
     'config' => [
-        'dataContainer' => 'Table',
+        'dataContainer' => \Contao\DC_Table::class,
         'enableVersioning' => true,
         'onsubmit_callback' => [
-            ['huh.utils.dca', 'setDateAdded'],
+            function (\Contao\DataContainer $dc) {
+                $modelUtil = \Contao\System::getContainer()->get(\HeimrichHannot\UtilsBundle\Util\Utils::class)->model();
+
+                if (null === $dc || null === ($model = $modelUtil->findModelInstanceByPk($dc->table, $dc->id)) || $model->dateAdded > 0) {
+                    return null;
+                }
+
+                \Contao\System::getContainer()->get('contao.framework')->createInstance(\Contao\Database::class)
+                    ->prepare("UPDATE $dc->table SET dateAdded=? WHERE id=? AND dateAdded = 0")->execute(time(), $dc->id);
+            }
         ],
         'sql' => [
             'keys' => [
@@ -92,13 +100,6 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
         ],
         'tstamp' => [
             'label' => &$GLOBALS['TL_LANG']['tl_cleaner']['tstamp'],
-            'sql' => "int(10) unsigned NOT NULL default '0'",
-        ],
-        'dateAdded' => [
-            'label' => &$GLOBALS['TL_LANG']['MSC']['dateAdded'],
-            'sorting' => true,
-            'flag' => 6,
-            'eval' => ['rgxp' => 'datim', 'doNotCopy' => true],
             'sql' => "int(10) unsigned NOT NULL default '0'",
         ],
         'type' => [
@@ -256,7 +257,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
     ],
 ];
 
-if (\in_array('privacy', \array_keys(System::getContainer()->getParameter('kernel.bundles')))
+if (\in_array('privacy', \array_keys(\Contao\System::getContainer()->getParameter('kernel.bundles')))
     && \class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle'))
 {
     $dca = &$GLOBALS['TL_DCA']['tl_cleaner'];
@@ -284,3 +285,5 @@ if (\in_array('privacy', \array_keys(System::getContainer()->getParameter('kerne
         $fields = str_replace(';{publish_legend', ',addPrivacyProtocolEntry;{publish_legend', $fields);
     }
 }
+
+\HeimrichHannot\UtilsBundle\Dca\DateAddedField::register('tl_cleaner');

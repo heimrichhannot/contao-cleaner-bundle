@@ -4,9 +4,9 @@ namespace HeimrichHannot\CleanerBundle\Cron;
 
 use Contao\CoreBundle\Monolog\ContaoContext;
 use Contao\CoreBundle\ServiceAnnotation\CronJob;
+use Contao\System;
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Exception\ExceptionInterface;
@@ -23,10 +23,6 @@ class CleanerCron
      */
     protected $eventDispatcher;
     /**
-     * @var ContainerInterface
-     */
-    private $container;
-    /**
      * @var ParameterBagInterface $parameterBag
      */
     protected $parameterBag;
@@ -36,12 +32,10 @@ class CleanerCron
     private $command;
 
     public function __construct(
-        ContainerInterface $container,
         EventDispatcherInterface $eventDispatcher,
         ParameterBagInterface $parameterBag,
         CleanerCommand $command
     ) {
-        $this->container = $container;
         $this->eventDispatcher = $eventDispatcher;
         $this->parameterBag = $parameterBag;
         $this->command = $command;
@@ -49,9 +43,9 @@ class CleanerCron
 
     /**
      * @return string
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws ExceptionInterface
      * @throws \Throwable
      * @CronJob("minutely")
      */
@@ -62,9 +56,9 @@ class CleanerCron
 
     /**
      * @return string
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws ExceptionInterface
      * @throws \Throwable
      * @CronJob("hourly")
      */
@@ -75,9 +69,9 @@ class CleanerCron
 
     /**
      * @return string
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws ExceptionInterface
      * @throws \Throwable
      * @CronJob("daily")
      */
@@ -88,9 +82,9 @@ class CleanerCron
 
     /**
      * @return string
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws ExceptionInterface
      * @throws \Throwable
      * @CronJob("weekly")
      */
@@ -116,7 +110,7 @@ class CleanerCron
             $input = new ArrayInput(['--interval' => $interval]);
             $output = new BufferedOutput();
 
-            $logger = $this->container->get('monolog.logger.contao');
+            $logger = System::getContainer()->get('monolog.logger.contao');
             $context = ['contao' => new ContaoContext(__METHOD__, ContaoContext::CRON)];
 
             $isMinutely = $interval === CleanerCommand::INTERVAL_MINUTELY;
