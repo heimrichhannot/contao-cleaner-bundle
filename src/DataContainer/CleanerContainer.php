@@ -103,10 +103,6 @@ class CleanerContainer
                 'contao' => new ContaoContext('tl_cleaner toggleVisibility', LogLevel::ERROR)
             ]);
 
-            $logger->log(LogLevel::INFO, \sprintf('A new version of record "tl_cleaner.id=%s" has been created', $id), [
-                'contao' => new ContaoContext(__METHOD__, LogLevel::INFO)
-            ]);
-
             Controller::redirect('contao/main.php?act=error');
         }
 
