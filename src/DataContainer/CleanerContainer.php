@@ -11,6 +11,7 @@ namespace HeimrichHannot\CleanerBundle\DataContainer;
 use Contao\Backend;
 use Contao\BackendUser;
 use Contao\Controller;
+use Contao\CoreBundle\Monolog\ContaoContext;
 use Contao\CoreBundle\ServiceAnnotation\Callback;
 use Contao\Database;
 use Contao\DataContainer;
@@ -20,6 +21,7 @@ use Contao\StringUtil;
 use Contao\System;
 use Contao\Versions;
 use HeimrichHannot\UtilsBundle\Util\Utils;
+use Psr\Log\LogLevel;
 
 class CleanerContainer
 {
@@ -66,7 +68,7 @@ class CleanerContainer
 
         if (strlen(Input::get('tid'))) {
             $this->toggleVisibility(Input::get('tid'), ('1' === Input::get('state')));
-            \Controller::redirect(Controller::getReferer());
+            Controller::redirect(Controller::getReferer());
         }
 
         // Check permissions AFTER checking the tid, so hacking attempts are logged
@@ -93,10 +95,14 @@ class CleanerContainer
     {
         $objUser = BackendUser::getInstance();
         $db = Database::getInstance();
+        $logger = System::getContainer()->get('monolog.logger.contao');
 
         // Check permissions to publish
         if (!$objUser->isAdmin && !$objUser->hasAccess('tl_cleaner::published', 'alexf')) {
-            Controller::log('Not enough permissions to publish/unpublish item ID "'.$id.'"', 'tl_cleaner toggleVisibility', TL_ERROR);
+            $logger->log(LogLevel::ERROR, 'Not enough permissions to publish/unpublish item ID "'.$id.'"', [
+                'contao' => new ContaoContext('tl_cleaner toggleVisibility', LogLevel::ERROR)
+            ]);
+
             Controller::redirect('contao/main.php?act=error');
         }
 
@@ -104,7 +110,8 @@ class CleanerContainer
         $objVersions->initialize();
 
         // Trigger the save_callback
-        if (is_array($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback'])) {
+        if (isset($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback']) &&
+            is_array($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback'])) {
             foreach ($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback'] as $callback) {
                 System::importStatic($callback[0]);
                 $blnVisible = $this->{$callback[0]}->{$callback[1]}($blnVisible, $this);
@@ -120,48 +127,8 @@ class CleanerContainer
 
         $objVersions->create();
 
-        $parents = $this->getParents($id);
-
-        Controller::log(
-            \sprintf(
-                'A new version of record "tl_cleaner.id=%s" has been created%s',
-                $id,
-                empty($parents) ? '' : \sprintf(' (parent records: %s)', \implode(', ', $parents))
-            ),
-            __METHOD__,
-            TL_GENERAL
-        );
-    }
-
-    /** @see \Contao\Controller::getParentEntries() */
-    protected function getParents($id)
-    {
-        $db = Database::getInstance();
-
-        $pTable = 'tl_cleaner';
-        $pId = $id;
-
-        $parents = [];
-
-        do
-        {
-            $parent = $db->prepare("SELECT pid FROM `$pTable` WHERE id=?")
-                ->limit(1)
-                ->execute($pId);
-
-            if ($parent->numRows < 1) {
-                break;
-            }
-
-            $pTable = $GLOBALS['TL_DCA'][$pTable]['config']['ptable'];
-            $pId = $parent->id;
-
-            $parents = $pTable . '.id=' . $pId;;
-
-            Controller::loadDataContainer($pTable);
-        }
-        while ($pId && !empty($GLOBALS['TL_DCA'][$pTable]['config']['ptable']));
-
-        return $parents;
+        $logger->log(LogLevel::INFO, \sprintf('A new version of record "tl_cleaner.id=%s" has been created', $id), [
+            'contao' => new ContaoContext(__METHOD__, LogLevel::INFO)
+        ]);
     }
 }
