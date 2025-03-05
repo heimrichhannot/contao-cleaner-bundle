@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.1.0] - 2025-03-05
+- Changed: allow contao 5 ([@Defcon0](https://github.com/Defcon0), [#3](https://github.com/heimrichhannot/contao-cleaner-bundle/pull/3))
+- Fixed: added some missing english locales
+
 ## [3.0.2] - 2024-08-13
 - Added: time units weeks, months, years for maxAge (actually min age)
 
