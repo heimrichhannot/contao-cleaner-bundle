@@ -8,6 +8,7 @@
 
 namespace HeimrichHannot\CleanerBundle\Command;
 
+use HeimrichHannot\Privacy\Manager\ProtocolManager;
 use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
@@ -225,7 +226,7 @@ class CleanerCommand extends Command
         $objFolder->purge();
 
         if ($cleaner->addGitKeepAfterClean) {
-            \touch(TL_ROOT.'/'.$strPath.'/.gitkeep');
+            \touch(System::getContainer()->getParameter('kernel.project_dir').'/'.$strPath.'/.gitkeep');
         }
 
         $this->output->writeln("<fg=green>Cleanup folder '".$strPath.' ['.$cleaner->title.'].</>');
@@ -467,9 +468,9 @@ class CleanerCommand extends Command
         }
 
         if ($cleaner->addPrivacyProtocolEntry
-            && \class_exists(\HeimrichHannot\Privacy\Manager\ProtocolManager::class))
+            && \class_exists(ProtocolManager::class))
         {
-            $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
+            $protocolManager = new ProtocolManager();
 
             if ($cleaner->privacyProtocolEntryDescription) {
                 $data['description'] = $cleaner->privacyProtocolEntryDescription;

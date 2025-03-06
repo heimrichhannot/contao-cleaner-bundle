@@ -33,7 +33,7 @@ class Plugin implements BundlePluginInterface, ConfigPluginInterface
      * {@inheritdoc}
      * @throws \Exception
      */
-    public function registerContainerConfiguration(LoaderInterface $loader, array $managerConfig)
+    public function registerContainerConfiguration(LoaderInterface $loader, array $managerConfig): void
     {
         $loader->load('@HeimrichHannotContaoCleanerBundle/config/services.yaml');
     }

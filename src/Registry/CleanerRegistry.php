@@ -8,6 +8,7 @@
 
 namespace HeimrichHannot\CleanerBundle\Registry;
 
+use Contao\Model\Collection;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use HeimrichHannot\CleanerBundle\Model\CleanerModel;
 
@@ -30,7 +31,7 @@ class CleanerRegistry
      * @param mixed $column
      * @param mixed $value
      *
-     * @return \Contao\Model\Collection|static|null
+     * @return Collection|static|null
      */
     public function findBy($column, $value, array $options = [])
     {
