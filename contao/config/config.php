@@ -1,5 +1,7 @@
 <?php
 
+use HeimrichHannot\CleanerBundle\Model\CleanerModel;
+
 /**
  * Backend modules
  */
@@ -11,4 +13,4 @@ $GLOBALS['BE_MOD']['system']['cleaner'] = [
 /**
  * Models
  */
-$GLOBALS['TL_MODELS']['tl_cleaner'] = 'HeimrichHannot\CleanerBundle\Model\CleanerModel';
+$GLOBALS['TL_MODELS']['tl_cleaner'] = CleanerModel::class;

@@ -5,7 +5,9 @@
  *
  * @license LGPL-3.0-or-later
  */
-
+use Contao\DC_Table;
+use Contao\System;
+use HeimrichHannot\Privacy\Manager\ProtocolManager;
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
 use HeimrichHannot\UtilsBundle\Dca\DateAddedField;
 
@@ -13,7 +15,7 @@ DateAddedField::register('tl_cleaner');
 
 $GLOBALS['TL_DCA']['tl_cleaner'] = [
     'config' => [
-        'dataContainer' => \Contao\DC_Table::class,
+        'dataContainer' => DC_Table::class,
         'enableVersioning' => true,
         'sql' => [
             'keys' => [
@@ -248,11 +250,11 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
     ],
 ];
 
-if (\in_array('privacy', \array_keys(\Contao\System::getContainer()->getParameter('kernel.bundles')))
+if (\in_array('privacy', \array_keys(System::getContainer()->getParameter('kernel.bundles')))
     && \class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle'))
 {
     $dca = &$GLOBALS['TL_DCA']['tl_cleaner'];
-    $protocolManager = new \HeimrichHannot\Privacy\Manager\ProtocolManager();
+    $protocolManager = new ProtocolManager();
 
     $fields = [
         'addPrivacyProtocolEntry' => $protocolManager->getSelectorFieldDca(),
