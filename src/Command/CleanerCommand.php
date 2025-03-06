@@ -8,6 +8,8 @@
 
 namespace HeimrichHannot\CleanerBundle\Command;
 
+use Contao\DC_Table;
+use Contao\Input;
 use HeimrichHannot\Privacy\Manager\ProtocolManager;
 use Contao\Config;
 use Contao\Controller;
@@ -502,7 +504,16 @@ class CleanerCommand extends Command
             return;
         }
 
-        $dc = new DC_Table_Utils($cleaner->dataContainer);
+        $dc = (new class($cleaner->dataContainer) extends DC_Table
+        {
+            /** @noinspection PhpMissingParentConstructorInspection */
+            public function __construct($strTable, $arrModule = [])
+            {
+                $this->strTable = $strTable;
+                $this->arrModule = $arrModule;
+            }
+        });
+
         $dc->activeRecord = $entity->row();
         $dc->id = $entity->id;
 

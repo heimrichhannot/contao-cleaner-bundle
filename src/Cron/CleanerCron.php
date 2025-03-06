@@ -21,15 +21,15 @@ class CleanerCron
     /**
      * @var EventDispatcherInterface
      */
-    protected $eventDispatcher;
+    protected EventDispatcherInterface $eventDispatcher;
     /**
      * @var ParameterBagInterface $parameterBag
      */
-    protected $parameterBag;
+    protected ParameterBagInterface $parameterBag;
     /**
      * @var CleanerCommand
      */
-    private $command;
+    private CleanerCommand $command;
 
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
@@ -105,13 +105,14 @@ class CleanerCron
      */
     public function run(string $interval): string
     {
+        $context = ['contao' => new ContaoContext(__METHOD__, ContaoContext::CRON)];
+        $logger = System::getContainer()->get('monolog.logger.contao');
+
         try
         {
             $input = new ArrayInput(['--interval' => $interval]);
             $output = new BufferedOutput();
 
-            $logger = System::getContainer()->get('monolog.logger.contao');
-            $context = ['contao' => new ContaoContext(__METHOD__, ContaoContext::CRON)];
 
             $isMinutely = $interval === CleanerCommand::INTERVAL_MINUTELY;
 
