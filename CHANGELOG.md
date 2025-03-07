@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.1.1] - 2025-03-07
+- Changed: added and executed tools to enhance code quality
+- Fixed: utils bundle v2 leftover
+
 ## [3.1.0] - 2025-03-05
 - Changed: allow contao 5 ([@Defcon0](https://github.com/Defcon0), [#3](https://github.com/heimrichhannot/contao-cleaner-bundle/pull/3))
 - Fixed: added some missing english locales
