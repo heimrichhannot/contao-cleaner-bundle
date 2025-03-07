@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @package HeimrichHannot Contao Cleaner Bundle
  * @copyright Heimrich & Hannot GmbH, 2024
  * @license https://spdx.org/licenses/LGPL-3.0-or-later.html LGPL-3.0-or-later
  */
@@ -18,19 +17,15 @@ use Symfony\Component\Config\Loader\LoaderInterface;
 
 class Plugin implements BundlePluginInterface, ConfigPluginInterface
 {
-    /**
-     * {@inheritDoc}
-     */
     public function getBundles(ParserInterface $parser): array
     {
         return [
             BundleConfig::create(HeimrichHannotContaoCleanerBundle::class)
-                ->setLoadAfter([ContaoCoreBundle::class])
+                ->setLoadAfter([ContaoCoreBundle::class]),
         ];
     }
 
     /**
-     * {@inheritdoc}
      * @throws \Exception
      */
     public function registerContainerConfiguration(LoaderInterface $loader, array $managerConfig): void

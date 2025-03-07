@@ -8,8 +8,8 @@
 
 namespace HeimrichHannot\CleanerBundle\Registry;
 
-use Contao\Model\Collection;
 use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\Model\Collection;
 use HeimrichHannot\CleanerBundle\Model\CleanerModel;
 
 class CleanerRegistry
@@ -19,18 +19,12 @@ class CleanerRegistry
      */
     protected $framework;
 
-    /**
-     * Constructor.
-     */
     public function __construct(ContaoFramework $framework)
     {
         $this->framework = $framework;
     }
 
     /**
-     * @param mixed $column
-     * @param mixed $value
-     *
      * @return Collection|static|null
      */
     public function findBy($column, $value, array $options = [])

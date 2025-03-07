@@ -11,28 +11,26 @@ namespace HeimrichHannot\CleanerBundle\Model;
 use Contao\Model;
 
 /**
- * Class CleanerModel
- * @package HeimrichHannot\CleanerBundle\Model
- * @property int $id
+ * @property int    $id
  * @property string $tstamp
  * @property string $dateAdded
  * @property string $type
  * @property string $title
  * @property string $description
- * @property bool $published
+ * @property bool   $published
  * @property string $dataContainer
- * @property bool $addMaxAge
+ * @property bool   $addMaxAge
  * @property string $maxAge
  * @property string $maxAgeField
  * @property string $period
  * @property string $whereCondition
  * @property string $fileDirRetrievalMode
- * @property mixed $entityFields
+ * @property mixed  $entityFields
  * @property string $directory
- * @property bool $addGitKeepAfterClean
+ * @property bool   $addGitKeepAfterClean
  * @property string $dependentTable
  * @property string $dependentField
- * @property bool $useEntityOnDeleteCallback
+ * @property bool   $useEntityOnDeleteCallback
  */
 class CleanerModel extends Model
 {

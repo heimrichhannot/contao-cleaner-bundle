@@ -26,14 +26,12 @@ use Psr\Log\LogLevel;
 class CleanerContainer
 {
     /**
-     * @var Utils $utils
+     * @var Utils
      */
     private $utils;
 
-    /**
-     * CleanerContainer constructor.
-     */
-    public function __construct(Utils $utils) {
+    public function __construct(Utils $utils)
+    {
         $this->utils = $utils;
     }
 
@@ -67,7 +65,7 @@ class CleanerContainer
         $objUser = BackendUser::getInstance();
 
         if (strlen(Input::get('tid'))) {
-            $this->toggleVisibility(Input::get('tid'), ('1' === Input::get('state')));
+            $this->toggleVisibility(Input::get('tid'), '1' === Input::get('state'));
             Controller::redirect(Controller::getReferer());
         }
 
@@ -76,7 +74,7 @@ class CleanerContainer
             return '';
         }
 
-        $href .= '&amp;tid='.$row['id'].'&amp;state='.($row['published'] ? '' : 1);
+        $href .= '&amp;tid=' . $row['id'] . '&amp;state=' . ($row['published'] ? '' : 1);
 
         if (!$row['published']) {
             $icon = 'invisible.gif';
@@ -99,8 +97,8 @@ class CleanerContainer
 
         // Check permissions to publish
         if (!$objUser->isAdmin && !$objUser->hasAccess('tl_cleaner::published', 'alexf')) {
-            $logger->log(LogLevel::ERROR, 'Not enough permissions to publish/unpublish item ID "'.$id.'"', [
-                'contao' => new ContaoContext('tl_cleaner toggleVisibility', LogLevel::ERROR)
+            $logger->log(LogLevel::ERROR, 'Not enough permissions to publish/unpublish item ID "' . $id . '"', [
+                'contao' => new ContaoContext('tl_cleaner toggleVisibility', LogLevel::ERROR),
             ]);
 
             Controller::redirect('contao/main.php?act=error');
@@ -110,8 +108,8 @@ class CleanerContainer
         $objVersions->initialize();
 
         // Trigger the save_callback
-        if (isset($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback']) &&
-            is_array($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback'])) {
+        if (isset($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback'])
+            && is_array($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback'])) {
             foreach ($GLOBALS['TL_DCA']['tl_cleaner']['fields']['published']['save_callback'] as $callback) {
                 System::importStatic($callback[0]);
                 $blnVisible = $this->{$callback[0]}->{$callback[1]}($blnVisible, $this);
@@ -128,7 +126,7 @@ class CleanerContainer
         $objVersions->create();
 
         $logger->log(LogLevel::INFO, \sprintf('A new version of record "tl_cleaner.id=%s" has been created', $id), [
-            'contao' => new ContaoContext(__METHOD__, LogLevel::INFO)
+            'contao' => new ContaoContext(__METHOD__, LogLevel::INFO),
         ]);
     }
 }

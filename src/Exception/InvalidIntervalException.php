@@ -2,8 +2,6 @@
 
 namespace HeimrichHannot\CleanerBundle\Exception;
 
-use Exception;
-
-class InvalidIntervalException extends Exception
+class InvalidIntervalException extends \Exception
 {
 }

@@ -14,27 +14,19 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Throwable;
 
 class CleanerCron
 {
-    /**
-     * @var EventDispatcherInterface
-     */
     protected EventDispatcherInterface $eventDispatcher;
-    /**
-     * @var ParameterBagInterface $parameterBag
-     */
+
     protected ParameterBagInterface $parameterBag;
-    /**
-     * @var CleanerCommand
-     */
+
     private CleanerCommand $command;
 
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
         ParameterBagInterface $parameterBag,
-        CleanerCommand $command
+        CleanerCommand $command,
     ) {
         $this->eventDispatcher = $eventDispatcher;
         $this->parameterBag = $parameterBag;
@@ -42,11 +34,11 @@ class CleanerCron
     }
 
     /**
-     * @return string
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws ExceptionInterface
      * @throws \Throwable
+     *
      * @CronJob("minutely")
      */
     public function minutely(): string
@@ -55,11 +47,11 @@ class CleanerCron
     }
 
     /**
-     * @return string
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws ExceptionInterface
      * @throws \Throwable
+     *
      * @CronJob("hourly")
      */
     public function hourly(): string
@@ -68,11 +60,11 @@ class CleanerCron
     }
 
     /**
-     * @return string
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws ExceptionInterface
      * @throws \Throwable
+     *
      * @CronJob("daily")
      */
     public function daily(): string
@@ -81,11 +73,11 @@ class CleanerCron
     }
 
     /**
-     * @return string
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws ExceptionInterface
      * @throws \Throwable
+     *
      * @CronJob("weekly")
      */
     public function weekly(): string
@@ -96,25 +88,25 @@ class CleanerCron
     /**
      * Run cleaner:execute with given interval.
      *
-     * @param string $interval
-     * @return string
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws ExceptionInterface
-     * @throws Throwable
+     * @throws \Throwable
      */
     public function run(string $interval): string
     {
-        $context = ['contao' => new ContaoContext(__METHOD__, ContaoContext::CRON)];
+        $context = [
+            'contao' => new ContaoContext(__METHOD__, ContaoContext::CRON),
+        ];
         $logger = System::getContainer()->get('monolog.logger.contao');
 
-        try
-        {
-            $input = new ArrayInput(['--interval' => $interval]);
+        try {
+            $input = new ArrayInput([
+                '--interval' => $interval,
+            ]);
             $output = new BufferedOutput();
 
-
-            $isMinutely = $interval === CleanerCommand::INTERVAL_MINUTELY;
+            $isMinutely = CleanerCommand::INTERVAL_MINUTELY === $interval;
 
             if (!$isMinutely) {
                 $logger->log(LogLevel::INFO, 'Running CleanerCron with interval ' . $interval, $context);
@@ -128,9 +120,7 @@ class CleanerCron
             }
 
             return $return;
-        }
-        catch (\Throwable $e)
-        {
+        } catch (\Throwable $e) {
             $logger->log(LogLevel::ERROR, $e->getMessage(), $context);
             throw $e;
         }

@@ -13,11 +13,13 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class AfterCleanEvent extends Event
 {
-    const NAME = 'huh.cleaner.event.after_clean';
+    public const NAME = 'huh.cleaner.event.after_clean';
+
     /**
      * @var array
      */
     protected $entity;
+
     /**
      * @var Model
      */

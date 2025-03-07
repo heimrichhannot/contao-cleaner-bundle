@@ -13,15 +13,18 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class BeforeCleanEvent extends Event
 {
-    const NAME = 'huh.cleaner.event.before_clean';
+    public const NAME = 'huh.cleaner.event.before_clean';
+
     /**
      * @var array
      */
     protected $entity;
+
     /**
      * @var Model
      */
     protected $cleaner;
+
     /**
      * @var bool
      */

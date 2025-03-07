@@ -50,5 +50,12 @@
   },
   "extra": {
     "contao-manager-plugin": "HeimrichHannot\\CleanerBundle\\ContaoManager\\Plugin"
+  },
+  "config": {
+    "allow-plugins": {
+      "contao-components/installer": false,
+      "php-http/discovery": false,
+      "contao/manager-plugin": false
+    }
   }
 }
