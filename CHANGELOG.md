@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.3.0] - 2026-03-12
+- Changed: raise php dependency to 8.1
+- Changed: raise contao dependency to 4.13
+- Fixed: exception when running cron
+- Fixed: add missing dependencies
+
 ## [3.2.0] - 2025-12-02
 - Changed: decrement required contao version
 

@@ -2,36 +2,23 @@
 
 namespace HeimrichHannot\CleanerBundle\Cron;
 
-use Contao\CoreBundle\Monolog\ContaoContext;
 use Contao\CoreBundle\ServiceAnnotation\CronJob;
-use Contao\System;
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class CleanerCron
 {
-    protected EventDispatcherInterface $eventDispatcher;
-
-    protected ParameterBagInterface $parameterBag;
-
-    private CleanerCommand $command;
 
     public function __construct(
-        EventDispatcherInterface $eventDispatcher,
-        ParameterBagInterface $parameterBag,
-        CleanerCommand $command,
-    ) {
-        $this->eventDispatcher = $eventDispatcher;
-        $this->parameterBag = $parameterBag;
-        $this->command = $command;
-    }
+        private CleanerCommand           $command,
+        private readonly LoggerInterface $contaoCronLogger,
+    ) {}
 
     /**
      * @throws ContainerExceptionInterface
@@ -95,11 +82,6 @@ class CleanerCron
      */
     public function run(string $interval): string
     {
-        $context = [
-            'contao' => new ContaoContext(__METHOD__, ContaoContext::CRON),
-        ];
-        $logger = System::getContainer()->get('monolog.logger.contao');
-
         try {
             $input = new ArrayInput([
                 '--interval' => $interval,
@@ -109,19 +91,19 @@ class CleanerCron
             $isMinutely = CleanerCommand::INTERVAL_MINUTELY === $interval;
 
             if (!$isMinutely) {
-                $logger->log(LogLevel::INFO, 'Running CleanerCron with interval ' . $interval, $context);
+                $this->contaoCronLogger->log(LogLevel::INFO, 'Running CleanerCron with interval ' . $interval);
             }
 
             $this->command->run($input, $output);
             $return = $output->fetch();
 
             if (!$isMinutely || $return) {
-                $logger->log(LogLevel::INFO, $return ?: 'CleanerCron returned empty handed', $context);
+                $this->contaoCronLogger->log(LogLevel::INFO, $return ?: 'CleanerCron returned empty handed');
             }
 
             return $return;
         } catch (\Throwable $e) {
-            $logger->log(LogLevel::ERROR, $e->getMessage(), $context);
+            $this->contaoCronLogger->log(LogLevel::ERROR, $e->getMessage());
             throw $e;
         }
     }
