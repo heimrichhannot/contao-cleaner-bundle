@@ -11,8 +11,8 @@ namespace HeimrichHannot\CleanerBundle\DataContainer;
 use Contao\Backend;
 use Contao\BackendUser;
 use Contao\Controller;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\CoreBundle\Monolog\ContaoContext;
-use Contao\CoreBundle\ServiceAnnotation\Callback;
 use Contao\Database;
 use Contao\DataContainer;
 use Contao\Image;
@@ -25,29 +25,20 @@ use Psr\Log\LogLevel;
 
 class CleanerContainer
 {
-    /**
-     * @var Utils
-     */
-    private $utils;
-
-    public function __construct(Utils $utils)
-    {
-        $this->utils = $utils;
+    public function __construct(
+        private readonly Utils $utils,
+    ) {
     }
 
-    /**
-     * @Callback(table="tl_cleaner", target="fields.dataContainer.options")
-     * @Callback(table="tl_cleaner", target="fields.dependentTable.options")
-     */
+    #[AsCallback(table: 'tl_cleaner', target: 'fields.dataContainer.options')]
+    #[AsCallback(table: 'tl_cleaner', target: 'fields.dependentTable.options')]
     public function getTables(?DataContainer $dc = null): array
     {
         return Database::getInstance()->listTables();
     }
 
-    /**
-     * @Callback(table="tl_cleaner", target="fields.entityFields.options")
-     * @Callback(table="tl_cleaner", target="fields.dependentField.options")
-     */
+    #[AsCallback(table: 'tl_cleaner', target: 'fields.entityFields.options')]
+    #[AsCallback(table: 'tl_cleaner', target: 'fields.dependentField.options')]
     public function getFieldsAsOptions(DataContainer $dc): array
     {
         if (!$dc->activeRecord->dataContainer) {
@@ -57,14 +48,12 @@ class CleanerContainer
         return $this->utils->dca()->getDcaFields($dc->activeRecord->dataContainer);
     }
 
-    /**
-     * @Callback(table="tl_cleaner", target="list.operations.toggle.button")
-     */
+    #[AsCallback(table: 'tl_cleaner', target: 'list.operations.toggle.button')]
     public function toggleIcon($row, $href, $label, $title, $icon, $attributes): string
     {
         $objUser = BackendUser::getInstance();
 
-        if (strlen(Input::get('tid'))) {
+        if (strlen((string) Input::get('tid'))) {
             $this->toggleVisibility(Input::get('tid'), '1' === Input::get('state'));
             Controller::redirect(Controller::getReferer());
         }

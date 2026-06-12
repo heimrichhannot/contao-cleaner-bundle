@@ -2,7 +2,7 @@
 
 namespace HeimrichHannot\CleanerBundle\Cron;
 
-use Contao\CoreBundle\ServiceAnnotation\CronJob;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsCronJob;
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -14,23 +14,10 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 class CleanerCron
 {
-
     public function __construct(
-        private CleanerCommand           $command,
+        private readonly CleanerCommand $command,
         private readonly LoggerInterface $contaoCronLogger,
-    ) {}
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws ExceptionInterface
-     * @throws \Throwable
-     *
-     * @CronJob("minutely")
-     */
-    public function minutely(): string
-    {
-        return $this->run(CleanerCommand::INTERVAL_MINUTELY);
+    ) {
     }
 
     /**
@@ -38,12 +25,11 @@ class CleanerCron
      * @throws NotFoundExceptionInterface
      * @throws ExceptionInterface
      * @throws \Throwable
-     *
-     * @CronJob("hourly")
      */
-    public function hourly(): string
+    #[AsCronJob('minutely')]
+    public function minutely(): void
     {
-        return $this->run(CleanerCommand::INTERVAL_HOURLY);
+        $this->run(CleanerCommand::INTERVAL_MINUTELY);
     }
 
     /**
@@ -51,12 +37,11 @@ class CleanerCron
      * @throws NotFoundExceptionInterface
      * @throws ExceptionInterface
      * @throws \Throwable
-     *
-     * @CronJob("daily")
      */
-    public function daily(): string
+    #[AsCronJob('hourly')]
+    public function hourly(): void
     {
-        return $this->run(CleanerCommand::INTERVAL_DAILY);
+        $this->run(CleanerCommand::INTERVAL_HOURLY);
     }
 
     /**
@@ -64,12 +49,23 @@ class CleanerCron
      * @throws NotFoundExceptionInterface
      * @throws ExceptionInterface
      * @throws \Throwable
-     *
-     * @CronJob("weekly")
      */
-    public function weekly(): string
+    #[AsCronJob('daily')]
+    public function daily(): void
     {
-        return $this->run(CleanerCommand::INTERVAL_WEEKLY);
+        $this->run(CleanerCommand::INTERVAL_DAILY);
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws ExceptionInterface
+     * @throws \Throwable
+     */
+    #[AsCronJob('weekly')]
+    public function weekly(): void
+    {
+        $this->run(CleanerCommand::INTERVAL_WEEKLY);
     }
 
     /**

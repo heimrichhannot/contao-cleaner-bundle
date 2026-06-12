@@ -5,6 +5,7 @@
  *
  * @license LGPL-3.0-or-later
  */
+use Contao\DataContainer;
 use Contao\DC_Table;
 use Contao\System;
 use HeimrichHannot\Privacy\Manager\ProtocolManager;
@@ -29,7 +30,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'format' => '%s',
         ],
         'sorting' => [
-            'mode' => 1,
+            'mode' => DataContainer::MODE_SORTED,
             'fields' => ['title'],
             'headerFields' => ['title'],
             'panelLayout' => 'filter;search,limit',
@@ -110,7 +111,7 @@ $GLOBALS['TL_DCA']['tl_cleaner'] = [
             'exclude' => true,
             'search' => true,
             'sorting' => true,
-            'flag' => 1,
+            'flag' => DataContainer::SORT_INITIAL_LETTER_ASC,
             'inputType' => 'text',
             'eval' => ['mandatory' => true, 'tl_class' => 'w50'],
             'sql' => "varchar(255) NOT NULL default ''",

@@ -71,14 +71,6 @@ class CleanerCommand extends Command
         self::INTERVAL_WEEKLY,
     ];
 
-    protected ContaoFramework $framework;
-
-    protected EventDispatcherInterface $eventDispatcher;
-
-    protected Utils $utils;
-
-    protected string $projectDir;
-
     protected InputInterface $input;
 
     protected OutputInterface $output;
@@ -101,17 +93,12 @@ class CleanerCommand extends Command
     }
 
     public function __construct(
-        ContaoFramework $framework,
-        EventDispatcherInterface $eventDispatcher,
-        Utils $utils,
-        string $projectDir,
+        protected ContaoFramework $framework,
+        protected EventDispatcherInterface $eventDispatcher,
+        protected Utils $utils,
+        protected string $projectDir,
         ?string $name = null,
     ) {
-        $this->framework = $framework;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->utils = $utils;
-        $this->projectDir = $projectDir;
-
         parent::__construct($name);
     }
 
@@ -287,7 +274,7 @@ class CleanerCommand extends Command
 
                     try {
                         $file = new File($filePath);
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         continue;
                     }
 
@@ -494,8 +481,10 @@ class CleanerCommand extends Command
             /**
              * @noinspection PhpMissingParentConstructorInspection
              */
-            public function __construct($strTable, $arrModule = [])
-            {
+            public function __construct(
+                $strTable,
+                $arrModule = [],
+            ) {
                 $this->strTable = $strTable;
                 $this->arrModule = $arrModule;
             }
