@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [3.4.0] - 2026-06-12
 - Changed: cleaner jobs are now executed asynchronously
+- Changed: require at least contao 5.3 and php 8.2
 - Fixed: added missing labels
 - Fixed: added missing english translations
 - Fixed: use correct event dispatcher interface
