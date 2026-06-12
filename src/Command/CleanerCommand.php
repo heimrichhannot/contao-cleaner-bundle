@@ -8,6 +8,7 @@
 
 namespace HeimrichHannot\CleanerBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
@@ -28,8 +29,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
+#[AsCommand(name: 'cleaner:execute', description: 'Trigger the cleaner, and remove no longer required files and database entries.')]
 class CleanerCommand extends Command
 {
     public const TYPE_ENTITY = 'entity';
@@ -79,6 +81,16 @@ class CleanerCommand extends Command
 
     protected string $interval;
 
+    public function __construct(
+        protected ContaoFramework $framework,
+        protected EventDispatcherInterface $eventDispatcher,
+        protected Utils $utils,
+        protected string $projectDir,
+        ?string $name = null,
+    ) {
+        parent::__construct($name);
+    }
+
     public function getInterval(): string
     {
         return $this->interval;
@@ -92,20 +104,9 @@ class CleanerCommand extends Command
         $this->interval = $interval;
     }
 
-    public function __construct(
-        protected ContaoFramework $framework,
-        protected EventDispatcherInterface $eventDispatcher,
-        protected Utils $utils,
-        protected string $projectDir,
-        ?string $name = null,
-    ) {
-        parent::__construct($name);
-    }
-
     protected function configure()
     {
-        $this->setName('cleaner:execute')
-            ->setDescription('Trigger the cleaner, and remove no longer required files and database entries.')
+        $this
             ->addOption(
                 'interval',
                 'i',

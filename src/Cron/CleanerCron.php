@@ -3,20 +3,21 @@
 namespace HeimrichHannot\CleanerBundle\Cron;
 
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCronJob;
+use Contao\CoreBundle\Util\ProcessUtil;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
 use HeimrichHannot\CleanerBundle\Command\CleanerCommand;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Exception\ExceptionInterface;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\BufferedOutput;
 
 class CleanerCron
 {
     public function __construct(
-        private readonly CleanerCommand $command,
         private readonly LoggerInterface $contaoCronLogger,
+        private readonly ProcessUtil $processUtil,
     ) {
     }
 
@@ -27,9 +28,9 @@ class CleanerCron
      * @throws \Throwable
      */
     #[AsCronJob('minutely')]
-    public function minutely(): void
+    public function minutely(): PromiseInterface
     {
-        $this->run(CleanerCommand::INTERVAL_MINUTELY);
+        return $this->run(CleanerCommand::INTERVAL_MINUTELY);
     }
 
     /**
@@ -39,9 +40,9 @@ class CleanerCron
      * @throws \Throwable
      */
     #[AsCronJob('hourly')]
-    public function hourly(): void
+    public function hourly(): PromiseInterface
     {
-        $this->run(CleanerCommand::INTERVAL_HOURLY);
+        return $this->run(CleanerCommand::INTERVAL_HOURLY);
     }
 
     /**
@@ -51,9 +52,9 @@ class CleanerCron
      * @throws \Throwable
      */
     #[AsCronJob('daily')]
-    public function daily(): void
+    public function daily(): PromiseInterface
     {
-        $this->run(CleanerCommand::INTERVAL_DAILY);
+        return $this->run(CleanerCommand::INTERVAL_DAILY);
     }
 
     /**
@@ -63,9 +64,9 @@ class CleanerCron
      * @throws \Throwable
      */
     #[AsCronJob('weekly')]
-    public function weekly(): void
+    public function weekly(): PromiseInterface
     {
-        $this->run(CleanerCommand::INTERVAL_WEEKLY);
+        return $this->run(CleanerCommand::INTERVAL_WEEKLY);
     }
 
     /**
@@ -76,31 +77,29 @@ class CleanerCron
      * @throws ExceptionInterface
      * @throws \Throwable
      */
-    public function run(string $interval): string
+    public function run(string $interval): PromiseInterface
     {
-        try {
-            $input = new ArrayInput([
-                '--interval' => $interval,
-            ]);
-            $output = new BufferedOutput();
+        $isMinutely = CleanerCommand::INTERVAL_MINUTELY === $interval;
+        $process = $this->processUtil->createSymfonyConsoleProcess('cleaner:execute', '--interval='.$interval);
 
-            $isMinutely = CleanerCommand::INTERVAL_MINUTELY === $interval;
+        $promise = new Promise(
+            static function () use ($process, &$promise, $isMinutely): void {
+                $process->wait();
 
-            if (!$isMinutely) {
-                $this->contaoCronLogger->log(LogLevel::INFO, 'Running CleanerCron with interval ' . $interval);
-            }
+                if ($process->isSuccessful()) {
+                    $output = $process->getOutput();
+                    if (!$isMinutely && '' !== $output) {
+                        $this->contaoCronLogger->log(LogLevel::INFO, $process->getOutput());
+                    }
+                    $promise->resolve($process->getOutput());
+                } else {
+                    $promise->reject($process->getErrorOutput() ?: $process->getOutput());
+                }
+            },
+        );
 
-            $this->command->run($input, $output);
-            $return = $output->fetch();
+        $process->start();
 
-            if (!$isMinutely || $return) {
-                $this->contaoCronLogger->log(LogLevel::INFO, $return ?: 'CleanerCron returned empty handed');
-            }
-
-            return $return;
-        } catch (\Throwable $e) {
-            $this->contaoCronLogger->log(LogLevel::ERROR, $e->getMessage());
-            throw $e;
-        }
+        return $promise;
     }
 }

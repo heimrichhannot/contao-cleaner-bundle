@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.4.0] - 2026-06-12
+- Changed: cleaner jobs are now executed asynchronously
+- Fixed: added missing labels
+- Fixed: added missing english translations
+- Fixed: use correct event dispatcher interface
+
 ## [3.3.1] - 2026-06-12
 - Fixed: compatibility with newer versions due changes in cron return value 
 
